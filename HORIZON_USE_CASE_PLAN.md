@@ -41,52 +41,47 @@ Use synthetic baseline and target values in the prototype rather than presenting
 
 ## End-to-end Databricks journey
 
-### Partner file-delivery contract
+### Source-system file-delivery contracts
 
-Horizon receives synthetic files that emulate deliveries from a fictional opt-in telematics partner, **VectorDrive Telematics**. This keeps the prototype realistic while ensuring no real customer or partner data is used.
+Horizon receives two independent synthetic file feeds. The fictional **Horizon Policy Administration System** is authoritative for customers, policies, vehicles, and claims. The fictional opt-in partner **VectorDrive Telematics** supplies trips, driving events, and coarse weather context. This separation prevents the telemetry partner from becoming the system of record for customer identity or insurance contracts.
 
 #### Delivery cadence
 
 | Dataset | Incremental delivery | Full reconciliation |
 |---|---|---|
-| Trips | Hourly | Weekly |
-| Driving events | Hourly | Weekly |
-| Policies | Daily | Weekly |
-| Vehicles | Daily when changed | Weekly |
-| Claims | Daily | Weekly |
-| Weather | Hourly | Not required |
+| Horizon customers | Daily when changed | Weekly |
+| Horizon policies | Daily | Weekly |
+| Horizon vehicles | Daily when changed | Weekly |
+| Horizon claims | Daily | Weekly |
+| VectorDrive trips | Hourly | Weekly |
+| VectorDrive driving events | Hourly | Weekly |
+| VectorDrive weather | Hourly | Not required |
 
 The initial load contains 90 days of trip and driving-event history, all active policies and vehicles, and recent claims. Subsequent deliveries contain new or changed records. Weekly snapshots reconcile missed, late, corrected, and deleted policy or vehicle records.
 
 #### Landing layout
 
 ```text
-/Volumes/<catalog>/<schema>/landing/vectordrive/
-  full/load_date=2026-10-01/
-    policies/
-    vehicles/
-    trips/
-    driving_events/
-    claims/
-  incremental/delivery_date=2026-10-02/hour=08/
-    trips/
-    driving_events/
-    weather/
-  incremental/delivery_date=2026-10-02/
-    policies/
-    vehicles/
-    claims/
-  reconciliation/snapshot_date=2026-10-08/
-    policies/
-    vehicles/
-    trips/
-    driving_events/
+/Volumes/<catalog>/<schema>/policy_admin_landing/
+  customers/load_type=FULL/load_date=2026-10-01/
+  policies/load_type=FULL/load_date=2026-10-01/
+  vehicles/load_type=FULL/load_date=2026-10-01/
+  claims/load_type=FULL/load_date=2026-10-01/
+  manifests/
+
+/Volumes/<catalog>/<schema>/vectordrive_landing/
+  trips/load_type=FULL/load_date=2026-10-01/
+  driving_events/load_type=FULL/load_date=2026-10-01/
+  driving_events/load_type=INCREMENTAL/delivery_date=2026-10-02/hour=08/
+  weather/load_type=FULL/load_date=2026-10-01/
   manifests/
 ```
 
-Every delivery includes a `partner_manifest.json` containing `batch_id`, `delivery_timestamp`, `load_type`, `schema_version`, file names, expected record counts, event-time range, and checksums. Each source record includes a stable business key, `source_updated_at`, and `batch_id`.
+Every delivery includes a manifest containing `source_system`, `batch_id`, `delivery_timestamp`, `load_type`, `schema_version`, file names, expected record counts, event-time range, and checksums. Each source record includes a stable business key, `source_updated_at`, and `batch_id`.
 
 ### 1. Lakeflow ingestion and transformation
+
+The canonical entity relationships and primary/foreign-key contract are documented in [README.md](README.md#data-model). The pipeline materializes `referential_integrity_checks` and fails before Gold publication when customer, policy, vehicle, trip, event, or claim relationships contain orphan records.
 
 Generate synthetic source data for:
 
@@ -100,7 +95,7 @@ Generate synthetic source data for:
 
 Use a Lakeflow pipeline to create:
 
-- **Bronze:** Raw policy, trip, event, claim, and weather records
+- **Bronze:** Raw customer, policy, vehicle, claim, trip, event, and weather records with source lineage
 - **Silver:** Validated trips, normalized events, joined policy context, and data-quality expectations
 - **Gold:** Policy-level 7-, 30-, and 90-day features; portfolio KPIs; renewal-review candidates; intervention outcomes
 
@@ -108,55 +103,49 @@ Use a Lakeflow pipeline to create:
 
 Implement one serverless Lakeflow Spark Declarative Pipeline in Python. Python supports both streaming ingestion and periodic snapshot CDC while keeping the solution in one governed dependency graph.
 
-```text
-VectorDrive files in UC Volume
-        |
-        +--> Auto Loader streaming tables --> bronze trip/event/claim/weather tables
-        |
-        +--> snapshot discovery -----------> bronze policy/vehicle snapshot views
-                                                   |
-                      +----------------------------+---------------------------+
-                      |                                                        |
-               expectations + dedup                                      snapshot CDC
-                      |                                                        |
-          silver trips/events/claims/weather                   silver policy/vehicle SCD2
-                      |                                                        |
-                      +----------------------------+---------------------------+
-                                                   |
-                                      gold materialized views
-                                                   |
-                          features / review queue / KPIs / model input
-```
+![Recommended pipeline design](docs/diagrams/horizon-pipeline-design.svg)
+
+The pipeline produces features; scoring and decisioning run after it as tasks in `horizon-auto-operational`, because the ML probability does not exist while the pipeline runs. `policy_risk_decisions` is the only place risk band, recommended action, and expected loss are defined.
 
 #### Dataset types and processing rules
 
 | Layer | Dataset | Lakeflow pattern | Key behavior |
 |---|---|---|---|
-| Bronze | `bronze_trips` | Streaming table + Auto Loader | Append full-history and incremental files; preserve source metadata and rescued data |
+| Bronze | `bronze_customers` | Streaming table + Auto Loader | Ingest the governed customer directory from Horizon's policy system |
+| Bronze | `bronze_policies` | Streaming table + Auto Loader | Ingest insurance contracts from Horizon's policy system |
+| Bronze | `bronze_trips` | Streaming table + Auto Loader | Append full-history and incremental VectorDrive files; preserve source metadata and rescued data |
 | Bronze | `bronze_driving_events` | Streaming table + Auto Loader | Append new files exactly once; retain event time and ingestion time |
 | Bronze | `bronze_claims` | Streaming table + Auto Loader | Capture new and corrected claim records |
 | Bronze | `bronze_weather` | Streaming table + Auto Loader | Append hourly coarse-region conditions |
 | Bronze | Policy and vehicle snapshots | Temporary views over ordered snapshots | Expose each complete snapshot to snapshot CDC processing |
 | Silver | `silver_policies` | Auto CDC from snapshot, SCD Type 2 | Preserve policy history and detect inserts, updates, and removals between snapshots |
+| Silver | `silver_customers` | Auto CDC from snapshot, SCD Type 2 | Preserve customer identity and consent changes without exposing direct contact data |
 | Silver | `silver_vehicles` | Auto CDC from snapshot, SCD Type 2 | Preserve vehicle history and current ownership association |
 | Silver | `silver_trips` | Auto CDC, SCD Type 1 | Keep the latest valid record per `trip_id` using `source_updated_at`; apply weekly corrections |
 | Silver | `silver_driving_events` | Auto CDC, SCD Type 1 | Keep the latest record per `event_id`; reject impossible or orphan events before CDC |
 | Silver | `silver_claims` | Auto CDC, SCD Type 1 | Keep the latest record per `claim_id` and apply corrected severity values |
 | Gold | `policy_driving_features` | Materialized view | Produce 7-, 30-, and 90-day policy features for training and scoring |
-| Gold | `renewal_review_candidates` | Materialized view | Join current policies, scores, renewal timing, and recommendations |
-| Gold | `portfolio_risk_kpis` | Materialized view | Aggregate expected loss, risk movement, interventions, and overrides by approved dimensions |
+| Gold | `renewal_review_candidates` | Materialized view | Join current policies, customers, and features for analyst lookup (masked names) |
+| Gold | `policy_risk_decisions` | Delta table, MERGE after scoring | One row per scored policy: risk band, recommended action, expected loss, review eligibility; change data feed for Lakebase sync |
 
 Use streaming tables only for continuously arriving raw files. Use Auto CDC for keyed corrections and current-state Silver tables. Use materialized views for joins and aggregations over already-deduplicated Silver tables. Use Auto CDC from snapshots for policy and vehicle history rather than treating weekly snapshots as append-only facts.
 
 #### Full and incremental behavior
 
-1. **Initial full load:** Auto Loader discovers the 90-day historical files and creates the bronze history. The first policy and vehicle snapshots establish current SCD2 records.
+1. **Initial full load:** Auto Loader discovers the 90-day telemetry history and the customer, policy, vehicle, and claim snapshots that establish current governed state.
 2. **Hourly increment:** New trip, event, and weather files are appended to bronze. Downstream materialized views refresh affected policy features.
-3. **Daily increment:** Policy, vehicle, and claim changes are processed using stable keys and `source_updated_at` sequencing.
-4. **Weekly reconciliation:** Complete policy and vehicle snapshots drive snapshot CDC. A reconciliation step compares full trip, event, and claim snapshots with Silver state and emits only changed or missing keyed records into the same Auto CDC input contract.
+3. **Daily increment:** Customer, policy, vehicle, and claim changes are processed using stable keys and `source_updated_at` sequencing.
+4. **Weekly reconciliation:** Complete customer, policy, and vehicle snapshots drive snapshot CDC. A reconciliation step compares full trip, event, and claim snapshots with Silver state and emits only changed or missing keyed records into the same Auto CDC input contract.
 5. **Late data:** Calculations use `event_timestamp`, not file-arrival time. Retain `ingested_at` to measure lateness and audit deliveries.
 6. **Idempotency:** Auto Loader tracks processed files; stable record keys and latest-record logic protect against duplicate contents under new file names.
 7. **Schema evolution:** Additive fields are rescued and reviewed before promotion to the curated schema. Breaking changes quarantine the batch.
+
+#### Source simulation jobs
+
+- `horizon-auto-generate-backfill` is unscheduled and generates the initial full policy-admin snapshot plus 90 days of telemetry history. Run it only for environment initialization or an intentional replay into a clean checkpoint.
+- `horizon-auto-generate-incremental-files` runs daily at 1:00 AM Pacific, writes uniquely keyed incremental policy-admin and VectorDrive batches, and completes before the 2:00 AM operational pipeline.
+- The operational job never generates source data. It only incrementally processes files already delivered to the landing volumes and then scores changed portfolio state.
+- Backfills and increments use the same schemas, stable business keys, `source_updated_at`, `batch_id`, and manifests so Auto Loader and latest-record processing remain idempotent.
 
 #### Data-quality expectations
 
@@ -191,11 +180,12 @@ Design incremental refresh into the Gold layer rather than assuming every materi
 9. Inspect each pipeline update's refresh metrics and execution plan. Commit evidence showing whether each MV used incremental or complete recomputation.
 10. Treat incremental refresh as an eligibility decision made by the optimizer. If a query falls back to complete recomputation, simplify the query or move that transformation into an incremental streaming or Auto CDC stage.
 
-The three Gold MVs should therefore remain intentionally simple:
+The Gold MVs should therefore remain intentionally simple:
 
 - `policy_driving_features`: grouped rolling feature aggregates from deduplicated Silver trips and events
-- `renewal_review_candidates`: stable-key joins across current policies, vehicles, features, predictions, and renewal dates
-- `portfolio_risk_kpis`: grouped aggregates from the review-candidate table by date, region, risk band, and intervention status
+- `renewal_review_candidates`: stable-key joins across current policies, customers, and features
+
+Portfolio aggregates come from the `underwriting_metrics` metric view over `governed_policy_risk_decisions`, not from a pipeline MV.
 
 #### Prototype delivery sequence
 
@@ -215,6 +205,10 @@ Commit the batch manifests and audit output so the evaluator can verify both ful
 - Mask or omit direct PII from analyst and app-facing tables.
 - Do not expose exact GPS coordinates; retain derived features such as nighttime-mile percentage.
 - Separate raw telemetry access from curated underwriting features.
+- Apply the built-in governed tag `class.name` to customer display-name columns and enforce the schema-scoped `horizon_mask_customer_names` ABAC policy. All analysts, including the demo underwriter, receive masked customer names. A dedicated Horizon tag can replace `class.name` when account governed-tag capacity is available.
+- Tag the analyst-facing `renewal_review_candidates.region` column with `class.location` and enforce the schema-scoped `horizon_filter_underwriter_regions` ABAC policy. Assign the demo underwriter `anhhoang.chu@databricks.com` to `West`; unassigned users receive no analyst-facing renewal rows. Do not tag pipeline source columns, preventing regional policies from filtering materialized-view refresh inputs.
+- Create account-level regional underwriter groups before production rollout and replace the named demo-user mapping with group-based assignments. Keep pipeline run-as identities outside analyst-facing row-filter targets.
+- Keep Customer ID available for exact analyst lookup while classifying it as a customer identifier. Do not add email, phone, address, or precise GPS data to Genie-facing tables.
 - Record table lineage from raw events through features and recommendations.
 - Register the model and its versions in Unity Catalog.
 
@@ -242,9 +236,37 @@ Model outputs:
 
 Apply deterministic, synthetic rating rules after prediction to create a renewal recommendation. Keep the model score, intervention recommendation, and pricing logic as separate, auditable outputs.
 
-### 4. Genie Agent
+### 4. Governed metric view
 
-Create a curated Genie Agent over gold policy-risk, claims, intervention, and portfolio tables.
+Create `serverless_stable_dvmvgw_catalog.horizon_auto.underwriting_metrics` as a Unity Catalog metric view over `renewal_review_candidates`. Treat it as the authoritative semantic layer shared by Genie, the Databricks App, SQL analysis, and future dashboards.
+
+Governed dimensions:
+
+- Region
+- Risk Band
+- Recommended Intervention
+- Policy Status
+- Renewal Month
+- Renewal Urgency
+- Claim History
+
+Governed measures:
+
+- Policy Count and Active Policy Count
+- High Risk Policy Count and Critical Risk Policy Count
+- Policies Renewing Next 30 Days
+- Total Written Premium
+- Expected Loss and Expected Loss Ratio
+- Average Behavior Risk Score
+- Prior Claim Count and Prior Incurred Amount
+- Underwriter Review Count
+- Safe Driving Challenge Count
+
+The metric view definition is deployed as code from `src/metrics/create_underwriting_metrics.sql` through the DAB-managed `horizon-auto-create-metrics` job. Validate portfolio-level and regional queries with `MEASURE()` before making the view available to Genie or the App.
+
+### 5. Genie Agent
+
+Create a curated Genie Agent with `underwriting_metrics` as the primary source for every portfolio KPI, count, premium, expected-loss, loss-ratio, renewal, claims, and intervention question. Retain `renewal_review_candidates` for individual policy records and `policy_driving_features` for detailed telematics explanations.
 
 Example questions:
 
@@ -255,9 +277,11 @@ Example questions:
 - "Which regions have the highest override rate?"
 - "How are model outcomes distributed across approved comparison groups?"
 
-The Genie Agent is Horizon's governed natural-language analytics layer. It queries curated Gold tables through a SQL warehouse and returns generated SQL and sources. It does not approve renewals, write to Lakebase, or directly change a premium.
+The Genie Agent is Horizon's governed natural-language analytics layer. It queries the governed metric view and curated policy-detail tables through a SQL warehouse and returns generated SQL and sources. It does not approve renewals, write to Lakebase, or directly change a premium.
 
-### 5. Underwriting Agent and Unity AI Gateway
+### 6. Underwriting Agent and Unity AI Gateway
+
+> **Superseded.** Supervisor Agents and Knowledge Assistants are now legacy Databricks offerings. The app uses the Genie Agent in Agent mode for policy and portfolio questions over governed data and the `underwriting_guidelines` volume, with citations. The original design is kept below for reference.
 
 Add a separate **Underwriting Copilot Agent** for policy-level investigation and recommendation explanation. Serve it through a Databricks Model Serving endpoint configured with Unity AI Gateway.
 
@@ -284,31 +308,35 @@ Configure AI Gateway on the agent's serving endpoint to provide:
 - Tags or usage attribution for the personal-lines business unit
 - A bounded foundation-model route selected from models available in the target workspace
 
+#### 50/50 model-routing experiment
+
+Configure the Copilot demonstration with two workspace-available foundation models: the highest suitable Claude Sonnet model and a cost-efficient GPT model. Route 50% of eligible Copilot requests to each model to illustrate Unity AI Gateway governance and comparative observability.
+
+- Resolve the exact Claude and GPT endpoint names at deployment time rather than hard-coding models that might not exist in the workspace.
+- Use a stable hash of `conversation_id` for sticky 50/50 assignment so every turn in one underwriting investigation stays on the same model.
+- Keep the same system instructions, tools, temperature, response schema, and token limits across both routes so the comparison measures model behavior rather than configuration differences.
+- Send SQL and portfolio questions to Genie regardless of model assignment; the 50/50 split applies only to Copilot synthesis and explanation requests.
+- Capture model name, route assignment, latency, input/output tokens, estimated cost, tool calls, user feedback, and underwriter override outcome through AI Gateway inference logging and application audit records.
+- Do not automatically promote a winner from the demonstration. Compare benchmark accuracy, groundedness, latency, and cost per completed review before selecting the production route.
+
 Store only the minimum policy context needed by the agent. Do not place direct PII, precise GPS traces, or prohibited rating variables in prompts or traces.
 
 #### Runtime interaction
 
-```text
-Underwriter in Horizon App
-          |
-          +--> Genie Agent ------> governed Gold tables / SQL warehouse
-          |
-          +--> Underwriting Copilot serving endpoint
-                         |
-                  Unity AI Gateway
-                         |
-              model + governed tools
-                         |
-          structured explanation and recommendation
-          |
-underwriter approves or overrides in the App
-          |
-     Lakebase decision and audit write-back
-```
+![Runtime interaction](docs/diagrams/horizon-runtime-interaction.svg)
 
 This separation gives each component a clear role: Genie performs governed data Q&A, the Gateway-backed agent synthesizes policy context and explanations, and the human-controlled App owns the operational decision.
 
-### 6. Lakebase operational serving
+#### Implemented Copilot resources
+
+- Supervisor Agent: `Horizon Underwriting Copilot` (`supervisor-agents/dc157dce-605f-49ee-bd7e-3d4aef2f853f`).
+- Serving endpoint: `mas-dc157dce-endpoint`.
+- Governed analytics tool: Genie Agent `Horizon Underwriting Intelligence` (`01f1c6c7119c15fb980d25cd32ec7bd2`).
+- MLflow trace experiment: `1417983980065322`.
+- The Copilot invokes Genie through the App service principal `82488809-bd0c-4366-8775-4af4290fca11`. That principal requires `USE CATALOG`, `USE SCHEMA`, and `SELECT` on every Genie source it may query, including `renewal_review_candidates`; omitting that grant caused an `INSUFFICIENT_PERMISSIONS` SQL execution error. Treat these grants as deployment prerequisites and verify them after adding or replacing a Genie source.
+- The managed Supervisor endpoint currently rejects AI Gateway configuration and the workspace exposes no standalone Foundation Model API endpoints, so the planned 50/50 Claude/GPT route remains a documented follow-on rather than a fabricated deployment.
+
+### 7. Lakebase operational serving
 
 Use Lakebase Postgres Autoscaling for operational application state:
 
@@ -321,9 +349,13 @@ Use Lakebase Postgres Autoscaling for operational application state:
 
 Analytics remain in Unity Catalog and are queried through a SQL warehouse. Lakebase handles low-latency workflow state and write-back; it is not the system for training or portfolio analytics.
 
-### 7. Databricks App
+Implemented on Lakebase project `projects/horizon-auto`, branch `production`, database `databricks-postgres`. The App creates `horizon_app.underwriting_decisions` and `horizon_app.audit_events` as its service principal during startup.
+
+### 8. Databricks App
 
 Build an AppKit/React underwriting application with analytics, Genie, and Lakebase resources.
+
+Implemented App: `horizon-underwriting` at `https://horizon-underwriting-7474647158801289.aws.databricksapps.com`.
 
 #### Portfolio overview
 
@@ -448,6 +480,7 @@ Screenshots may supplement this evidence but cannot replace it.
 - Raw synthetic data flows through Lakeflow into governed bronze, silver, and gold tables.
 - Unity Catalog permissions and masking prevent broad access to sensitive fields.
 - A registered model produces explainable policy-level risk predictions.
+- A governed metric view standardizes underwriting KPIs and is validated with executable metric queries.
 - Genie answers the defined portfolio and policy questions accurately.
 - The app displays portfolio analytics and a complete policy review.
 - An approved or overridden decision persists to Lakebase and appears in audit history.

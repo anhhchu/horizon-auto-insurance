@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 920" width="1600" height="920" role="img" aria-labelledby="title desc">
+  <title id="title">Horizon data flow</title>
+  <desc id="desc">Partner files flow through a Lakeflow pipeline in Unity Catalog, are scored by the claim risk model, and merged into policy_risk_decisions, the single source for risk band, recommended action, and expected loss. A governed view feeds the metric view and the Genie Agent, which also reads the underwriting guidelines in a Unity Catalog volume. After each build the table syncs to Lakebase, where the Horizon App reads the queue, policy, and KPIs and writes underwriter decisions.</desc>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=DM+Mono:wght@400;500&amp;display=swap');
+    /* Databricks brand tokens (databricks-impeccable brand-tokens.css) */
+    svg {
+      --db-lava-600: #FF3621;
+      --db-navy-900: #0B2026;
+      --db-oat-medium: #EEEDE9;
+      --db-oat-light: #F9F7F4;
+      --db-white: #FFFFFF;
+      --db-neutral-700: #4A5568;
+      --db-border: #C4CCD6;
+      --db-font-primary: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      --db-font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    }
+    .canvas { fill: var(--db-oat-light); }
+    text { font-family: var(--db-font-primary); fill: var(--db-navy-900); }
+    .h-title { font-size: 32px; font-weight: 700; letter-spacing: -0.01em; }
+    .h-sub { font-size: 18px; fill: var(--db-neutral-700); }
+    .eyebrow { font-size: 15px; font-weight: 500; fill: var(--db-neutral-700); }
+    .region { fill: var(--db-oat-medium); }
+    .region-line { fill: none; stroke: var(--db-border); stroke-width: 1; }
+    .node { fill: var(--db-white); stroke: var(--db-border); stroke-width: 1; }
+    .node-hero { fill: var(--db-navy-900); }
+    .t { font-size: 17px; font-weight: 700; }
+    .tm { font-family: var(--db-font-mono); font-size: 15px; font-weight: 500; }
+    .s { font-size: 14px; fill: var(--db-neutral-700); }
+    .on-dark { fill: var(--db-white); }
+    .on-dark-muted { fill: var(--db-oat-medium); font-size: 14px; }
+    .pill { fill: var(--db-lava-600); }
+    .pill-text { font-size: 13px; font-weight: 700; fill: var(--db-white); }
+    .actor { fill: var(--db-white); stroke: var(--db-navy-900); stroke-width: 1.5; }
+    .edge { fill: none; stroke: var(--db-neutral-700); stroke-width: 1.5; }
+    .edge-label { font-size: 14px; fill: var(--db-neutral-700); }
+    .arrowhead { fill: var(--db-neutral-700); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="arrowhead" d="M0 0 L10 5 L0 10 Z"/>
+    </marker>
+  </defs>
+
+  <rect class="canvas" width="1600" height="920"/>
+
+  <!-- Header -->
+  <text class="h-title" x="40" y="68">Horizon data flow</text>
+  <text class="h-sub" x="40" y="100">One gold table defines risk for every policy. The app, the metric view, and Genie read the same numbers.</text>
+
+  <!-- Partner files -->
+  <text class="eyebrow" x="40" y="178">Partner files</text>
+  <rect class="node" x="40" y="195" width="210" height="80" rx="8"/>
+  <text class="t" x="56" y="228">Policy Admin</text>
+  <text class="s" x="56" y="252">customers · policies · claims</text>
+  <rect class="node" x="40" y="295" width="210" height="80" rx="8"/>
+  <text class="t" x="56" y="328">VectorDrive</text>
+  <text class="s" x="56" y="352">trips · events · weather</text>
+
+  <!-- Unity Catalog region -->
+  <rect class="region" x="280" y="150" width="930" height="500" rx="12"/>
+  <text class="eyebrow" x="300" y="178">Unity Catalog · horizon_auto · ABAC name masking and region row filter</text>
+
+  <!-- Lakeflow pipeline -->
+  <rect class="region-line" x="300" y="200" width="280" height="430" rx="8"/>
+  <text class="eyebrow" x="316" y="226">Lakeflow pipeline</text>
+  <rect class="node" x="315" y="245" width="250" height="70" rx="8"/>
+  <text class="t" x="331" y="274">Bronze</text>
+  <text class="s" x="331" y="298">Auto Loader streaming tables</text>
+  <rect class="node" x="315" y="345" width="250" height="70" rx="8"/>
+  <text class="t" x="331" y="374">Silver</text>
+  <text class="s" x="331" y="398">Expectations · Auto CDC</text>
+  <rect class="node" x="315" y="445" width="250" height="70" rx="8"/>
+  <text class="tm" x="331" y="474">policy_driving_features</text>
+  <text class="s" x="331" y="498">90-day driving features</text>
+  <rect class="node" x="315" y="545" width="250" height="70" rx="8"/>
+  <text class="tm" x="331" y="574">renewal_review_candidates</text>
+  <text class="s" x="331" y="598">Masked names for lookup</text>
+
+  <!-- Score and decide -->
+  <text class="eyebrow" x="605" y="226">Score and decide</text>
+  <rect class="node" x="605" y="245" width="250" height="70" rx="8"/>
+  <text class="tm" x="621" y="274">score_policies</text>
+  <text class="s" x="621" y="298">Claim risk model @prod</text>
+  <rect class="node" x="605" y="345" width="250" height="70" rx="8"/>
+  <text class="tm" x="621" y="374">policy_risk_predictions</text>
+  <text class="s" x="621" y="398">Claim risk probability</text>
+
+  <rect class="pill" x="691" y="424" width="164" height="24" rx="12"/>
+  <text class="pill-text" x="773" y="441" text-anchor="middle">Single source of truth</text>
+  <rect class="node-hero" x="605" y="455" width="250" height="110" rx="8"/>
+  <text class="tm on-dark" x="621" y="486">policy_risk_decisions</text>
+  <text class="on-dark-muted" x="621" y="512">Risk band · recommended action</text>
+  <text class="on-dark-muted" x="621" y="533">Expected loss · review flag</text>
+  <text class="on-dark-muted" x="621" y="554">MERGE · change data feed</text>
+
+  <!-- Govern and measure -->
+  <text class="eyebrow" x="885" y="226">Govern and measure</text>
+  <rect class="node" x="885" y="345" width="305" height="70" rx="8"/>
+  <text class="tm" x="901" y="374">governed_policy_risk_decisions</text>
+  <text class="s" x="901" y="398">Region row filter per reader</text>
+  <rect class="node" x="885" y="455" width="305" height="70" rx="8"/>
+  <text class="tm" x="901" y="484">underwriting_metrics</text>
+  <text class="s" x="901" y="508">Metric view · governed KPIs</text>
+
+  <!-- Serve -->
+  <text class="eyebrow" x="1235" y="178">Serve</text>
+  <rect class="node" x="1235" y="245" width="175" height="70" rx="8"/>
+  <text class="t" x="1251" y="274">SQL warehouse</text>
+  <text class="s" x="1251" y="298">Genie and jobs</text>
+  <rect class="node" x="1235" y="345" width="175" height="70" rx="8"/>
+  <text class="t" x="1251" y="374">Genie Agent</text>
+  <text class="s" x="1251" y="398">Agent mode · as the user</text>
+  <rect class="node" x="1235" y="445" width="175" height="70" rx="8"/>
+  <text class="t" x="1251" y="474">Guidelines</text>
+  <text class="s" x="1251" y="498">PDFs in a UC volume</text>
+
+  <!-- Act -->
+  <text class="eyebrow" x="1435" y="178">Act</text>
+  <rect class="node" x="1435" y="245" width="145" height="170" rx="8"/>
+  <text class="t" x="1451" y="274">Horizon App</text>
+  <text class="s" x="1451" y="298">Databricks App</text>
+  <text class="s" x="1451" y="336">Review queue</text>
+  <text class="s" x="1451" y="358">Policy review</text>
+  <text class="s" x="1451" y="380">Decisions</text>
+  <rect class="actor" x="1435" y="560" width="112" height="40" rx="20"/>
+  <text class="t" x="1491" y="585" text-anchor="middle" style="font-size: 15px">Underwriter</text>
+
+  <!-- Lakebase region -->
+  <rect class="region" x="605" y="680" width="585" height="160" rx="12"/>
+  <text class="eyebrow" x="625" y="708">Lakebase Postgres</text>
+  <rect class="node" x="625" y="725" width="265" height="90" rx="8"/>
+  <text class="t" x="641" y="756">Synced table</text>
+  <text class="s" x="641" y="780">policy_risk_decisions</text>
+  <text class="s" x="641" y="801">Queue · policy · KPIs</text>
+  <rect class="node" x="905" y="725" width="265" height="90" rx="8"/>
+  <text class="tm" x="921" y="756">underwriting_decisions</text>
+  <text class="s" x="921" y="780">audit_events</text>
+  <text class="s" x="921" y="801">Human approvals and overrides</text>
+
+  <!-- Note -->
+  <text class="eyebrow" x="40" y="708">Why two serving paths</text>
+  <text class="s" x="40" y="736">App pages read Postgres in</text>
+  <text class="s" x="40" y="757">milliseconds. Genie and jobs use</text>
+  <text class="s" x="40" y="778">the warehouse. Both read the</text>
+  <text class="s" x="40" y="799">same policy_risk_decisions rows.</text>
+
+  <!-- Edges: ingest -->
+  <path class="edge" d="M250 235 H290 V280 H313" marker-end="url(#arrow)"/>
+  <path class="edge" d="M250 335 H290 V280"/>
+  <path class="edge" d="M440 315 V343" marker-end="url(#arrow)"/>
+  <path class="edge" d="M440 415 V443" marker-end="url(#arrow)"/>
+  <path class="edge" d="M440 515 V543" marker-end="url(#arrow)"/>
+
+  <!-- Edges: score and decide -->
+  <path class="edge" d="M565 465 H587 V280 H603" marker-end="url(#arrow)"/>
+  <path class="edge" d="M565 500 H603" marker-end="url(#arrow)"/>
+  <path class="edge" d="M665 315 V343" marker-end="url(#arrow)"/>
+  <path class="edge" d="M665 415 V453" marker-end="url(#arrow)"/>
+
+  <!-- Edges: govern and measure -->
+  <path class="edge" d="M855 490 H870 V380 H883" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1037 415 V453" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1190 380 H1220 V280 H1233" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1190 490 H1220 V380"/>
+
+  <!-- Edges: serve -->
+  <path class="edge" d="M1322 315 V343" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1322 445 V417" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1435 380 H1412" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1491 560 V417" marker-end="url(#arrow)"/>
+
+  <!-- Edges: Lakebase -->
+  <path class="edge" d="M1555 415 V770 H1172" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text class="edge-label" x="1362" y="760" text-anchor="middle">Approve · override</text>
+  <path class="edge" d="M825 565 V723" marker-end="url(#arrow)"/>
+  <text class="edge-label" x="837" y="668">Triggered sync + reconciliation</text>
+  <path class="edge" d="M760 815 V870 H1575 V417" marker-end="url(#arrow)"/>
+  <text class="edge-label" x="1168" y="892" text-anchor="middle">Millisecond reads: queue, policy, and KPIs</text>
+</svg>

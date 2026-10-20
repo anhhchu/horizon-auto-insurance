@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1580 910" width="1580" height="910" role="img" aria-labelledby="title desc">
+  <title id="title">Recommended pipeline design</title>
+  <desc id="desc">Partner files land in Unity Catalog Volumes, Auto Loader writes Bronze streaming tables, Auto CDC builds SCD2 and SCD1 Silver tables with integrity checks, and Gold materialized views produce renewal_review_candidates and policy_driving_features. After the pipeline, score_policies writes policy_risk_predictions, which merge into policy_risk_decisions and the governed view, and sync_lakebase refreshes the synced table the app reads.</desc>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=DM+Mono:wght@400;500&amp;display=swap');
+    /* Databricks brand tokens (databricks-impeccable brand-tokens.css) */
+    svg {
+      --db-lava-600: #FF3621;
+      --db-navy-900: #0B2026;
+      --db-oat-medium: #EEEDE9;
+      --db-oat-light: #F9F7F4;
+      --db-white: #FFFFFF;
+      --db-neutral-700: #4A5568;
+      --db-border: #C4CCD6;
+      --db-font-primary: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      --db-font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    }
+    .canvas { fill: var(--db-oat-light); }
+    text { font-family: var(--db-font-primary); fill: var(--db-navy-900); }
+    .h-title { font-size: 32px; font-weight: 700; letter-spacing: -0.01em; }
+    .h-sub { font-size: 18px; fill: var(--db-neutral-700); }
+    .eyebrow { font-size: 15px; font-weight: 500; fill: var(--db-neutral-700); }
+    .region { fill: var(--db-oat-medium); }
+    .region-line { fill: none; stroke: var(--db-border); stroke-width: 1; }
+    .node { fill: var(--db-white); stroke: var(--db-border); stroke-width: 1; }
+    .node-hero { fill: var(--db-navy-900); }
+    .t { font-size: 17px; font-weight: 700; }
+    .tm { font-family: var(--db-font-mono); font-size: 15px; font-weight: 500; }
+    .s { font-size: 14px; fill: var(--db-neutral-700); }
+    .on-dark { fill: var(--db-white); }
+    .on-dark-muted { fill: var(--db-oat-medium); font-size: 14px; }
+    .pill { fill: var(--db-lava-600); }
+    .pill-text { font-size: 13px; font-weight: 700; fill: var(--db-white); }
+    .actor { fill: var(--db-white); stroke: var(--db-navy-900); stroke-width: 1.5; }
+    .edge { fill: none; stroke: var(--db-neutral-700); stroke-width: 1.5; }
+    .edge-label { font-size: 14px; fill: var(--db-neutral-700); }
+    .arrowhead { fill: var(--db-neutral-700); }
+      .lifeline { stroke: var(--db-border); stroke-width: 1.5; stroke-dasharray: 4 6; }
+    .band { fill: var(--db-oat-medium); }
+    .step { fill: var(--db-navy-900); }
+    .step-human { fill: var(--db-lava-600); }
+    .step-text { font-size: 13px; font-weight: 700; fill: var(--db-white); }
+    .msg { font-size: 15px; }
+    .edge-reply { fill: none; stroke: var(--db-neutral-700); stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .opt { fill: none; stroke: var(--db-neutral-700); stroke-width: 1; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="arrowhead" d="M0 0 L10 5 L0 10 Z"/>
+    </marker>
+  </defs>
+  <rect class="canvas" width="1580" height="910"/>
+  <text class="h-title" x="40" y="68">Recommended pipeline design</text>
+  <text class="h-sub" x="40" y="100">Lakeflow builds features. Scoring and decisioning run after it, in the same job, because the score does not exist yet.</text>
+  <text class="eyebrow" x="40" y="178">Unity Catalog Volumes</text>
+  <rect class="node" x="40" y="200" width="230" height="100" rx="8"/>
+  <text class="tm" x="56" y="230">policy_admin_landing</text>
+  <text class="s" x="56" y="254">customers · policies</text>
+  <text class="s" x="56" y="275">vehicles · claims</text>
+  <rect class="node" x="40" y="330" width="230" height="80" rx="8"/>
+  <text class="tm" x="56" y="360">vectordrive_landing</text>
+  <text class="s" x="56" y="384">trips · events · weather</text>
+  <rect class="region" x="300" y="150" width="860" height="470" rx="12"/>
+  <text class="eyebrow" x="320" y="178">Lakeflow Spark Declarative Pipeline · serverless</text>
+  <text class="eyebrow" x="320" y="226">Bronze · Auto Loader</text>
+  <rect class="node" x="320" y="245" width="230" height="90" rx="8"/>
+  <text class="t" x="336" y="275">Policy admin tables</text>
+  <text class="s" x="336" y="299">Streaming tables</text>
+  <text class="s" x="336" y="320">Source lineage kept</text>
+  <rect class="node" x="320" y="375" width="230" height="90" rx="8"/>
+  <text class="t" x="336" y="405">Telematics tables</text>
+  <text class="s" x="336" y="429">Streaming tables</text>
+  <text class="s" x="336" y="450">trips · events · weather</text>
+  <text class="eyebrow" x="580" y="226">Silver</text>
+  <rect class="node" x="580" y="245" width="260" height="90" rx="8"/>
+  <text class="t" x="596" y="275">Snapshot CDC · SCD2</text>
+  <text class="s" x="596" y="299">policies, customers, vehicles</text>
+  <rect class="node" x="580" y="375" width="260" height="90" rx="8"/>
+  <text class="t" x="596" y="405">Auto CDC · SCD1</text>
+  <text class="s" x="596" y="429">trips, events, claims, weather</text>
+  <rect class="node" x="580" y="505" width="260" height="90" rx="8"/>
+  <text class="t" x="596" y="535">Integrity checks</text>
+  <text class="s" x="596" y="559">Fail the update on orphaned keys</text>
+  <text class="eyebrow" x="870" y="226">Gold materialized views</text>
+  <rect class="node" x="870" y="245" width="270" height="90" rx="8"/>
+  <text class="tm" x="886" y="275">renewal_review_candidates</text>
+  <text class="s" x="886" y="299">Masked names for lookup</text>
+  <rect class="node" x="870" y="375" width="270" height="90" rx="8"/>
+  <text class="tm" x="886" y="405">policy_driving_features</text>
+  <text class="s" x="886" y="429">90-day features · behavior score</text>
+  <rect class="region" x="1190" y="150" width="350" height="700" rx="12"/>
+  <text class="eyebrow" x="1210" y="178">After the pipeline · same job</text>
+  <rect class="node" x="1210" y="245" width="310" height="70" rx="8"/>
+  <text class="tm" x="1226" y="275">score_policies</text>
+  <text class="s" x="1226" y="299">Claim risk model @prod</text>
+  <rect class="node" x="1210" y="345" width="310" height="70" rx="8"/>
+  <text class="tm" x="1226" y="375">policy_risk_predictions</text>
+  <text class="s" x="1226" y="399">Claim risk probability</text>
+  <rect class="pill" x="1356" y="424" width="164" height="24" rx="12"/>
+  <text class="pill-text" x="1438" y="441" text-anchor="middle">Single source of truth</text>
+  <rect class="node-hero" x="1210" y="455" width="310" height="110" rx="8"/>
+  <text class="tm on-dark" x="1226" y="485">policy_risk_decisions</text>
+  <text class="on-dark-muted" x="1226" y="509">Risk band · recommended action</text>
+  <text class="on-dark-muted" x="1226" y="530">Expected loss · review flag</text>
+  <text class="on-dark-muted" x="1226" y="551">MERGE · change data feed</text>
+  <rect class="node" x="1210" y="605" width="310" height="90" rx="8"/>
+  <text class="tm" x="1226" y="635">governed_policy_risk_decisions</text>
+  <text class="s" x="1226" y="659">Region row filter per reader</text>
+  <text class="s" x="1226" y="680">Metric view · Genie</text>
+  <rect class="node" x="1210" y="735" width="310" height="90" rx="8"/>
+  <text class="tm" x="1226" y="765">sync_lakebase</text>
+  <text class="s" x="1226" y="789">Synced table for the app</text>
+  <text class="s" x="1226" y="810">Reconciled against Delta</text>
+  <path class="edge" d="M270 250 H295 V290 H318" marker-end="url(#arrow)"/>
+  <path class="edge" d="M270 370 H295 V420 H318" marker-end="url(#arrow)"/>
+  <path class="edge" d="M550 290 H578" marker-end="url(#arrow)"/>
+  <path class="edge" d="M550 310 H565 V410 H578" marker-end="url(#arrow)"/>
+  <path class="edge" d="M550 430 H578" marker-end="url(#arrow)"/>
+  <path class="edge" d="M710 465 V503" marker-end="url(#arrow)"/>
+  <path class="edge" d="M840 290 H868" marker-end="url(#arrow)"/>
+  <path class="edge" d="M840 420 H868" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1005 375 V337" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1140 410 H1170 V280 H1208" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1140 440 H1180 V510 H1208" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1260 315 V343" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1260 415 V453" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1260 565 V603" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1520 520 H1530 V780 H1522" marker-end="url(#arrow)"/>
+  <text class="s" x="40" y="880">Streaming tables for arriving files · Auto CDC for keyed corrections · materialized views for joins and aggregates over deduplicated Silver.</text>
+</svg>
