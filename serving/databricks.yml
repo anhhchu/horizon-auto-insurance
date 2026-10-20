@@ -1,0 +1,56 @@
+# Lakebase serving layer for the Horizon app. Deploy after the root bundle's
+# horizon-auto-operational job has built policy_risk_decisions: a synced table
+# cannot be created until its source table exists.
+bundle:
+  name: horizon-auto-serving
+
+variables:
+  catalog:
+    default: serverless_stable_dvmvgw_catalog
+  schema:
+    default: horizon_auto
+  lakebase_branch:
+    default: projects/horizon-auto/branches/production
+  postgres_database:
+    default: databricks_postgres
+
+resources:
+  postgres_synced_tables:
+    policy_risk_decisions:
+      # Lives in the standard catalog (needs only USE SCHEMA + CREATE TABLE, not CREATE CATALOG).
+      # The UC schema name becomes the Postgres schema: horizon_auto.policy_risk_decisions_synced
+      # in databricks_postgres.
+      synced_table_id: ${var.catalog}.${var.schema}.policy_risk_decisions_synced
+      source_table_full_name: ${var.catalog}.${var.schema}.policy_risk_decisions
+      primary_key_columns: [policy_id]
+      # Triggered by the sync_lakebase task in horizon-auto-operational after each build.
+      scheduling_policy: TRIGGERED
+      branch: ${var.lakebase_branch}
+      postgres_database: ${var.postgres_database}
+      create_database_objects_if_missing: true
+      new_pipeline_spec:
+        storage_catalog: ${var.catalog}
+        storage_schema: ${var.schema}
+
+    underwriter_region_assignments:
+      # Region entitlements (src/governance/apply_customer_abac.sql). The app joins this to
+      # policy_risk_decisions_synced on current_user, so Lakebase reads are scoped per user
+      # with the same rule as the Unity Catalog row filter.
+      synced_table_id: ${var.catalog}.${var.schema}.underwriter_region_assignments_synced
+      source_table_full_name: ${var.catalog}.${var.schema}.underwriter_region_assignments
+      primary_key_columns: [principal, region]
+      scheduling_policy: TRIGGERED
+      branch: ${var.lakebase_branch}
+      postgres_database: ${var.postgres_database}
+      create_database_objects_if_missing: true
+      new_pipeline_spec:
+        storage_catalog: ${var.catalog}
+        storage_schema: ${var.schema}
+
+targets:
+  prod:
+    default: true
+    mode: production
+    workspace:
+      profile: DEFAULT
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
