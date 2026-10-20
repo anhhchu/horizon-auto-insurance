@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>West Region Renewal Notice Requirements</title>
+<style>
+  body { font-family: Georgia, serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; margin: 0 48px; }
+  h1 { font-size: 20pt; margin: 32px 0 4px; }
+  h2 { font-size: 14pt; margin: 28px 0 8px; border-bottom: 1px solid #999; padding-bottom: 4px; page-break-after: avoid; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 16px; font-size: 10pt; }
+  th, td { border: 1px solid #888; padding: 4px 8px; text-align: left; vertical-align: top; }
+  th { background: #eee; }
+  .meta { color: #555; font-size: 10pt; }
+  .note { border: 1px solid #888; padding: 8px 12px; margin: 12px 0; font-size: 10pt; }
+  .page { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>West Region Renewal Notice Requirements</h1>
+<p class="meta">Document NTC-WEST-2026 · Version 1.4 · Effective 2026-01-01 · Owner: Horizon Compliance · Fictional document for the Horizon Auto Insurance demo.</p>
+
+<div class="note">The notice periods in this document are illustrative values for a fictional insurer. They are not legal requirements of any real state. Real filings must follow each state's insurance code and department guidance.</div>
+
+<h2>Section 1. When notice is required</h2>
+<p><strong>1.1 Changes requiring notice.</strong> Written notice to the customer is required before renewal for a deductible change (DEDUCTIBLE_REVIEW), a coverage reduction, or a non-renewal. Safe-Driving Coaching offers and NO_ACTION do not require notice.</p>
+<p><strong>1.2 Human Renewal Review.</strong> Recording HUMAN_RENEWAL_REVIEW does not itself require notice. If the Senior Underwriter's outcome changes deductible or coverage, the notice periods in Section 2 apply from the date of that outcome.</p>
+
+<h2>Section 2. Notice periods by state</h2>
+<table>
+  <tr><th>State</th><th>Notice code</th><th>Deductible change</th><th>Coverage reduction</th><th>Non-renewal</th></tr>
+  <tr><td>California</td><td>NTC-CA-30</td><td>30 days</td><td>45 days</td><td>75 days</td></tr>
+  <tr><td>Arizona</td><td>NTC-AZ-20</td><td>20 days</td><td>30 days</td><td>45 days</td></tr>
+  <tr><td>Washington</td><td>NTC-WA-30</td><td>30 days</td><td>30 days</td><td>45 days</td></tr>
+  <tr><td>Oregon</td><td>NTC-OR-30</td><td>30 days</td><td>30 days</td><td>45 days</td></tr>
+  <tr><td>Nevada</td><td>NTC-NV-30</td><td>30 days</td><td>30 days</td><td>60 days</td></tr>
+</table>
+<p><strong>2.1 Counting.</strong> Notice periods are calendar days before the renewal date, counted from the mailing date. Add 5 days when notice is sent by mail only.</p>
+<p><strong>2.2 Late notice.</strong> If the remaining days before renewal are fewer than the notice period, the change cannot take effect at this renewal. Record the permitted action now (usually SAFE_DRIVING_COACHING) and revisit at the next renewal, using override category OVR-05 if this differs from the recommendation.</p>
+
+<h2 class="page">Section 3. Required notice content</h2>
+<p>Every notice of a deductible change must include:</p>
+<ol>
+  <li>The current and new collision deductible amounts.</li>
+  <li>The effective date of the change (the renewal date).</li>
+  <li>A plain-language reason based on observable driving factors, for example "frequent hard braking recorded over the last 90 days". Do not cite the claim risk probability or risk band.</li>
+  <li>How to request a review of the decision, including the phone line 1-800-555-0147 and a 30-day window to respond.</li>
+  <li>A statement that the customer may enroll in the Safe-Driving Program if eligible.</li>
+</ol>
+
+<h2>Section 4. Adverse action explanation</h2>
+<p><strong>4.1</strong> When telematics data contributes to a deductible change or non-renewal, the notice must list up to four principal driving factors in order of contribution.</p>
+<p><strong>4.2</strong> Factors must come from the approved list: speeding events, hard-brake events, phone-distraction events, night-time mileage, severe-weather mileage, and prior claims.</p>
+<p><strong>4.3</strong> Prohibited factors in UW-PA-2026 Section 6 must never appear in a notice.</p>
+
+<h2>Section 5. Record keeping</h2>
+<p><strong>5.1</strong> The decision, override reason, and notice date are recorded in the Horizon audit log (<code>audit_events</code>) and retained for 7 years.</p>
+<p><strong>5.2</strong> Compliance samples 5% of deductible-change notices each quarter for content review.</p>
+
+</body>
+</html>

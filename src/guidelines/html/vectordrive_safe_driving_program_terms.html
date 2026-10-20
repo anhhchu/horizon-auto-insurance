@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VectorDrive Safe-Driving Program Terms</title>
+<style>
+  body { font-family: Georgia, serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; margin: 0 48px; }
+  h1 { font-size: 20pt; margin: 32px 0 4px; }
+  h2 { font-size: 14pt; margin: 28px 0 8px; border-bottom: 1px solid #999; padding-bottom: 4px; page-break-after: avoid; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 16px; font-size: 10pt; }
+  th, td { border: 1px solid #888; padding: 4px 8px; text-align: left; vertical-align: top; }
+  th { background: #eee; }
+  .meta { color: #555; font-size: 10pt; }
+  .page { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>VectorDrive Safe-Driving Program Terms</h1>
+<p class="meta">Document VD-SDP-2026 · Version 2.0 · Effective 2026-04-01 · Program partner: VectorDrive Telematics · Fictional document for the Horizon Auto Insurance demo.</p>
+
+<h2>Section 1. Eligibility and enrollment</h2>
+<p><strong>1.1 Eligibility.</strong> A Horizon personal auto customer is eligible for the Safe-Driving Program when the policy is active, telematics consent is on file, and the customer has not been enrolled in the program in the last 12 months.</p>
+<p><strong>1.2 Consent.</strong> Enrollment requires the customer's telematics consent. If consent is missing or withdrawn, coaching cannot be offered and the underwriter should record NO_ACTION or HUMAN_RENEWAL_REVIEW under the underwriting guidelines (UW-PA-2026).</p>
+<p><strong>1.3 Offer.</strong> Horizon sends the enrollment offer by email and in the VectorDrive mobile app. The offer is valid for 21 days. An offer not accepted within 21 days counts as declined for Section 4.2 of UW-PA-2026.</p>
+<p><strong>1.4 Cost.</strong> The program is free for the customer.</p>
+
+<h2>Section 2. Coaching modules</h2>
+<table>
+  <tr><th>Module</th><th>Length</th><th>Assigned when</th></tr>
+  <tr><td>2.1 Speed Awareness</td><td>4 weekly sessions</td><td>5 or more speeding events in 90 days</td></tr>
+  <tr><td>2.2 Smooth Braking</td><td>3 weekly sessions</td><td>5 or more hard-brake events in 90 days</td></tr>
+  <tr><td>2.3 Focused Driving</td><td>4 weekly sessions</td><td>More than 10 phone-distraction events in 90 days (mandatory, see UW-PA-2026 Section 4.4)</td></tr>
+  <tr><td>2.4 Night and Weather Driving</td><td>2 weekly sessions</td><td>More than 25% of miles at night or in severe weather</td></tr>
+</table>
+<p>A customer may be assigned up to three modules. Sessions are 10-minute in-app lessons with a short quiz.</p>
+
+<h2>Section 3. Completion criteria</h2>
+<p><strong>3.1 Completed.</strong> Coaching is completed when the customer finishes all assigned sessions within 60 days of enrollment <em>and</em> the targeted event count falls by at least 30% over the following 60 days compared with the 90 days before enrollment.</p>
+<p><strong>3.2 Not completed.</strong> Coaching is not completed when the customer finishes fewer than 75% of assigned sessions within 60 days, or the targeted event count does not fall by 30%.</p>
+<p><strong>3.3 Reporting.</strong> VectorDrive reports enrollment, session completion, and event reduction to Horizon weekly in the telematics partner feed.</p>
+
+<h2 class="page">Section 4. Incentives</h2>
+<p><strong>4.1 Completion credit.</strong> Customers who complete coaching receive a one-time safe-driving credit of 5% of the annual premium, applied at the next renewal.</p>
+<p><strong>4.2 Credit cap.</strong> The completion credit is capped at $150 per policy term.</p>
+<p><strong>4.3 Repeat enrollment.</strong> A customer may earn the completion credit once every 24 months.</p>
+
+<h2>Section 5. Data use</h2>
+<p><strong>5.1 Purpose limits.</strong> Program data is used only for coaching, completion reporting, and the renewal review described in UW-PA-2026. It is not used for marketing.</p>
+<p><strong>5.2 Location.</strong> VectorDrive shares derived trip features with Horizon. Precise GPS traces are not shared.</p>
+<p><strong>5.3 Retention.</strong> Coaching session records are retained for 36 months.</p>
+
+<h2>Section 6. Opting out</h2>
+<p><strong>6.1</strong> A customer may leave the program at any time in the VectorDrive app. Leaving the program counts as not completed under Section 3.2.</p>
+<p><strong>6.2</strong> Withdrawing telematics consent ends program participation within 2 business days.</p>
+
+<h2>Section 7. Customer communication</h2>
+<p>Coaching offers must use plain language, state that the program is free and voluntary, and must not disclose the customer's claim risk probability, risk band, or internal scores. Approved offer wording:</p>
+<p><em>"Based on your recent driving with VectorDrive, you're eligible for our free Safe-Driving Program. It takes about 10 minutes a week, and drivers who complete it earn a renewal credit of up to $150."</em></p>
+
+</body>
+</html>

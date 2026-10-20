@@ -1,0 +1,50 @@
+{
+  "horizon_personal_auto_underwriting_guidelines.pdf": [
+    {
+      "question": "When can an underwriter record a deductible review for a High band policy?",
+      "expected_fact": "Only when safe-driving coaching was offered at least 60 days before renewal and declined or not completed, and the renewal date is at least the state notice period away (UW-PA-2026 Section 4.2)"
+    },
+    {
+      "question": "What triggers a Human Renewal Review?",
+      "expected_fact": "Critical band, 2 or more prior claims in 36 months, or prior incurred losses above $15,000 in 36 months (Section 4.3)"
+    },
+    {
+      "question": "Which override category applies when a state notice period prevents the recommended action?",
+      "expected_fact": "OVR-05 Regulatory (Section 5.2)"
+    },
+    {
+      "question": "What collision premium credit does a $1,000 deductible give?",
+      "expected_fact": "18% of the collision premium, which is 38% of the annual premium; $126 on a $1,840 premium (Section 7)"
+    }
+  ],
+  "vectordrive_safe_driving_program_terms.pdf": [
+    {
+      "question": "What counts as completing safe-driving coaching?",
+      "expected_fact": "All assigned sessions within 60 days and a 30% or greater drop in the targeted event count over the next 60 days (VD-SDP-2026 Section 3.1)"
+    },
+    {
+      "question": "Which coaching module is mandatory for heavy phone distraction?",
+      "expected_fact": "Focused Driving, when phone-distraction events exceed 10 in 90 days (Section 2.3)"
+    },
+    {
+      "question": "What is the completion credit and its cap?",
+      "expected_fact": "5% of annual premium at next renewal, capped at $150 per term, once every 24 months (Section 4)"
+    }
+  ],
+  "west_region_notice_requirements.pdf": [
+    {
+      "question": "How many days of notice does California require for a deductible change?",
+      "expected_fact": "30 days, notice code NTC-CA-30, plus 5 days if sent by mail only (NTC-WEST-2026 Section 2)"
+    },
+    {
+      "question": "What must a deductible change notice not include?",
+      "expected_fact": "The claim risk probability or risk band, and any prohibited factor from UW-PA-2026 Section 6 (Sections 3 and 4.3)"
+    }
+  ],
+  "cross_source": [
+    {
+      "question": "Can POL-000004 move to a deductible review at this renewal?",
+      "expected_fact": "Combines policy data (band, renewal date, prior claims) from governed_policy_risk_decisions with UW-PA-2026 Section 4.2 and the state notice period in NTC-WEST-2026; if coaching was not offered 60 days before renewal, record SAFE_DRIVING_COACHING instead"
+    }
+  ]
+}

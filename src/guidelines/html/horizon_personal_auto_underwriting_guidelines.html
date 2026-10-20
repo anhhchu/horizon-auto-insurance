@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Horizon Personal Auto Underwriting Guidelines</title>
+<style>
+  body { font-family: Georgia, serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; margin: 0 48px; }
+  h1 { font-size: 20pt; margin: 32px 0 4px; }
+  h2 { font-size: 14pt; margin: 28px 0 8px; border-bottom: 1px solid #999; padding-bottom: 4px; page-break-after: avoid; }
+  h3 { font-size: 12pt; margin: 18px 0 6px; page-break-after: avoid; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 16px; font-size: 10pt; }
+  th, td { border: 1px solid #888; padding: 4px 8px; text-align: left; vertical-align: top; }
+  th { background: #eee; }
+  .meta { color: #555; font-size: 10pt; }
+  .note { border: 1px solid #888; padding: 8px 12px; margin: 12px 0; font-size: 10pt; }
+  .page { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>Horizon Personal Auto Underwriting Guidelines</h1>
+<p class="meta">Document UW-PA-2026 · Version 3.2 · Effective 2026-07-01 · Owner: Regional Underwriting, West · Fictional document for the Horizon Auto Insurance demo. Not real insurance guidance.</p>
+
+<div class="note">These guidelines govern renewal review of personal auto policies enrolled in the VectorDrive telematics program. Model scores are decision support. An authenticated underwriter makes every renewal decision and records it in the Horizon Underwriting app.</div>
+
+<h2>Section 1. Scope and roles</h2>
+<p><strong>1.1 Scope.</strong> These guidelines apply to active personal auto policies in the West region (California, Arizona, Washington, Oregon, and Nevada) at renewal. Commercial auto and non-telematics policies are out of scope.</p>
+<p><strong>1.2 Roles.</strong> A Renewal Underwriter (grade U2 or above) reviews flagged policies and approves or overrides the recommended intervention. A Senior Underwriter (grade U4 or above) completes every Human Renewal Review. The Regional Underwriting Manager reviews the monthly override report described in Section 5.4.</p>
+<p><strong>1.3 System of record.</strong> The risk band, recommended action, and expected loss for a policy are taken only from the governed table <code>policy_risk_decisions</code>. Underwriters must not recompute bands from raw telematics data.</p>
+
+<h2>Section 2. Claim risk bands</h2>
+<p><strong>2.1 Model.</strong> The claim risk model (<code>driving_claim_risk_model</code>, alias <code>prod</code>) estimates the probability of at least one claim in the next policy term from 90-day driving features.</p>
+<p><strong>2.2 Bands.</strong> Policies are banded on claim risk probability as follows:</p>
+<table>
+  <tr><th>Band</th><th>Claim risk probability</th><th>Review requirement</th></tr>
+  <tr><td>Critical</td><td>0.45 or above</td><td>Mandatory review; Human Renewal Review recommended</td></tr>
+  <tr><td>High</td><td>0.42 to below 0.45</td><td>Mandatory review; Safe-Driving Coaching recommended</td></tr>
+  <tr><td>Moderate</td><td>0.39 to below 0.42</td><td>No mandatory review; coaching may be offered</td></tr>
+  <tr><td>Low</td><td>below 0.39</td><td>No review; renew on current terms</td></tr>
+</table>
+<p><strong>2.3 Review threshold.</strong> A policy requires underwriter review when its claim risk probability is 0.42 or above. This threshold is the <em>review threshold</em> used in the Horizon review queue.</p>
+<p><strong>2.4 Behavior risk score.</strong> The heuristic behavior risk score is an explanatory feature only. It must not be used to assign a band, rank the queue, or justify an adverse action.</p>
+
+<h2>Section 3. Approved interventions</h2>
+<p>Only the four interventions below may be recorded. Codes are those used in the Horizon Underwriting app.</p>
+<table>
+  <tr><th>Code</th><th>Intervention</th><th>Eligibility</th><th>Customer impact</th></tr>
+  <tr><td>NO_ACTION</td><td>No action</td><td>Any band</td><td>Renew on current terms</td></tr>
+  <tr><td>SAFE_DRIVING_COACHING</td><td>Safe-driving coaching</td><td>Telematics consent on file; not enrolled in coaching in the last 12 months</td><td>Enrollment offer in the VectorDrive Safe-Driving Program (see document VD-SDP-2026)</td></tr>
+  <tr><td>DEDUCTIBLE_REVIEW</td><td>Deductible review</td><td>See Section 4.2</td><td>Customer is offered a higher collision deductible at renewal</td></tr>
+  <tr><td>HUMAN_RENEWAL_REVIEW</td><td>Human renewal review</td><td>Critical band, or 2 or more prior claims in 36 months</td><td>Senior Underwriter reviews renewal terms</td></tr>
+</table>
+<p><strong>3.2 Prohibited actions.</strong> Underwriters must not bind coverage, quote or approve a premium change, cancel mid-term, or non-renew a policy from the review queue. Premium changes follow the filed rating plan and are outside these guidelines.</p>
+
+<h2 class="page">Section 4. Intervention sequencing</h2>
+<p><strong>4.1 Coaching first.</strong> For High band policies, Safe-Driving Coaching is the default intervention. Coaching must be offered before any deductible change unless Section 4.3 applies.</p>
+<p><strong>4.2 Deductible review eligibility.</strong> A Deductible Review may be recorded only when <em>both</em> of the following are true:</p>
+<ol>
+  <li>Safe-Driving Coaching was offered at least 60 days before the renewal date and the customer declined it or did not complete it (completion criteria in VD-SDP-2026, Section 3); and</li>
+  <li>The renewal date is at least as far away as the state notice period for a deductible change (see document NTC-WEST-2026, Section 2).</li>
+</ol>
+<p>If coaching has not yet been offered, record SAFE_DRIVING_COACHING and revisit the deductible at the next renewal.</p>
+<p><strong>4.3 Human Renewal Review triggers.</strong> Record HUMAN_RENEWAL_REVIEW when any of the following is true: the policy is in the Critical band; the policy has 2 or more prior claims in 36 months; or prior incurred losses exceed $15,000 in 36 months. A Human Renewal Review supersedes coaching and deductible actions.</p>
+<p><strong>4.4 Distraction events.</strong> When phone-distraction events exceed 10 in 90 days, the coaching enrollment must include the Focused Driving module (VD-SDP-2026, Section 2.3).</p>
+
+<h2>Section 5. Overrides</h2>
+<p><strong>5.1 Definition.</strong> An override is any recorded intervention that differs from the recommended action in <code>policy_risk_decisions</code>.</p>
+<p><strong>5.2 Reason required.</strong> Every override requires a written reason in the Horizon app. Use one of the reason categories below at the start of the note.</p>
+<table>
+  <tr><th>Category</th><th>Use when</th></tr>
+  <tr><td>OVR-01 Data quality</td><td>Telematics data is incomplete, for example fewer than 20 trips in 90 days</td></tr>
+  <tr><td>OVR-02 Prior intervention</td><td>The customer completed coaching in the last 12 months</td></tr>
+  <tr><td>OVR-03 Claims history</td><td>Prior claims or incurred losses meet Section 4.3</td></tr>
+  <tr><td>OVR-04 Customer contact</td><td>A documented customer conversation changes the appropriate action</td></tr>
+  <tr><td>OVR-05 Regulatory</td><td>A state notice period or rule prevents the recommended action</td></tr>
+</table>
+<p><strong>5.3 Limits.</strong> An underwriter whose overrides exceed 25% of decisions in a calendar month is referred to the Regional Underwriting Manager for calibration.</p>
+<p><strong>5.4 Monthly report.</strong> The override rate by region, band, and reason category is reviewed monthly.</p>
+
+<h2>Section 6. Prohibited factors and data use</h2>
+<p><strong>6.1</strong> Decisions must not use, infer, or discuss race, ethnicity, religion, national origin, sex, gender identity, sexual orientation, marital status, disability, or any proxy for them.</p>
+<p><strong>6.2</strong> Precise GPS locations, home address, and contact details must not be used in underwriting decisions or included in notes. Use derived features such as night-time and severe-weather mileage percentages.</p>
+<p><strong>6.3</strong> Customer display names are masked. Identify policies by Policy ID and customers by Customer ID.</p>
+
+<h2>Section 7. Deductible options</h2>
+<p>The table below lists the collision deductible options available at renewal and their filed collision premium credits. Credits apply to the collision portion of the premium only, which is 38% of the annual premium for the West region rating plan.</p>
+<table>
+  <tr><th>Collision deductible</th><th>Collision premium credit</th><th>Example on $1,840 annual premium</th></tr>
+  <tr><td>$250</td><td>0% (base)</td><td>$0</td></tr>
+  <tr><td>$500</td><td>8%</td><td>$56 lower</td></tr>
+  <tr><td>$1,000</td><td>18%</td><td>$126 lower</td></tr>
+  <tr><td>$1,500</td><td>24%</td><td>$168 lower</td></tr>
+</table>
+<p>Underwriters may describe these credits to explain a Deductible Review but must not quote a final premium.</p>
+
+<h2>Section 8. Renewal timeline</h2>
+<table>
+  <tr><th>Days before renewal</th><th>Step</th></tr>
+  <tr><td>90</td><td>Policy is scored and, if flagged, enters the review queue</td></tr>
+  <tr><td>60</td><td>Latest date to offer Safe-Driving Coaching for it to count under Section 4.2</td></tr>
+  <tr><td>45</td><td>Target date to record a decision for every flagged policy</td></tr>
+  <tr><td>State notice period</td><td>Latest date to send notice of a deductible change (NTC-WEST-2026)</td></tr>
+</table>
+
+</body>
+</html>
