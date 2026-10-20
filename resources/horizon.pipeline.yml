@@ -1,0 +1,19 @@
+resources:
+  pipelines:
+    horizon_pipeline:
+      name: horizon-auto-lakeflow
+      catalog: ${var.catalog}
+      target: ${var.schema}
+      serverless: true
+      photon: true
+      channel: CURRENT
+      continuous: false
+      root_path: ../src/pipeline
+      libraries:
+        - glob:
+            include: ../src/pipeline/**
+      configuration:
+        horizon.catalog: ${var.catalog}
+        horizon.schema: ${var.schema}
+        horizon.policy_admin_path: /Volumes/${var.catalog}/${var.schema}/policy_admin_landing
+        horizon.telematics_path: /Volumes/${var.catalog}/${var.schema}/vectordrive_landing

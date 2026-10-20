@@ -1,0 +1,42 @@
+resources:
+  jobs:
+    horizon_train_and_score:
+      name: horizon-auto-train-and-score
+      schedule:
+        quartz_cron_expression: 0 0 3 ? * SUN
+        timezone_id: America/Los_Angeles
+        pause_status: PAUSED
+      tasks:
+        - task_key: train_and_score
+          notebook_task:
+            notebook_path: ../src/ml/train_and_score.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: ml
+        - task_key: build_policy_risk_decisions
+          depends_on:
+            - task_key: train_and_score
+          sql_task:
+            warehouse_id: ${resources.sql_warehouses.horizon_warehouse.id}
+            file:
+              path: ../src/gold/build_policy_risk_decisions.sql
+        - task_key: sync_lakebase
+          depends_on:
+            - task_key: build_policy_risk_decisions
+          notebook_task:
+            notebook_path: ../src/lakebase/sync_policy_risk_decisions.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: lakebase
+      environments:
+        - environment_key: ml
+          spec:
+            client: "4"
+            dependencies:
+              - mlflow>=3.1.0
+              - scikit-learn>=1.5.0
+        - environment_key: lakebase
+          spec:
+            client: "4"

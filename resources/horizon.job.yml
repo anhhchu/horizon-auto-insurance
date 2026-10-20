@@ -1,0 +1,23 @@
+resources:
+  jobs:
+    horizon_backfill_generation:
+      name: horizon-auto-generate-backfill
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+      tasks:
+        - task_key: generate_backfill_files
+          notebook_task:
+            notebook_path: ../src/data_generation/generate_partner_files.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: default
+      environments:
+        - environment_key: default
+          spec:
+            client: "4"
+            dependencies:
+              - Faker==37.12.0

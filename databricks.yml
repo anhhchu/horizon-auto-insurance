@@ -1,0 +1,19 @@
+bundle:
+  name: horizon-auto-insurance
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    default: serverless_stable_dvmvgw_catalog
+  schema:
+    default: horizon_auto
+
+targets:
+  prod:
+    default: true
+    mode: production
+    workspace:
+      profile: DEFAULT
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

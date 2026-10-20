@@ -1,0 +1,72 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "10000000000000000000000000000001",
+        "question": [
+          "Which policies have the highest driving risk?"
+        ]
+      },
+      {
+        "id": "10000000000000000000000000000002",
+        "question": [
+          "Summarize renewal risk for customer CUST-000214"
+        ]
+      },
+      {
+        "id": "10000000000000000000000000000003",
+        "question": [
+          "How much expected loss is associated with high and critical risk policies by region?"
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "serverless_stable_dvmvgw_catalog.horizon_auto.governed_policy_risk_decisions"
+      },
+      {
+        "identifier": "serverless_stable_dvmvgw_catalog.horizon_auto.renewal_review_candidates"
+      },
+      {
+        "identifier": "serverless_stable_dvmvgw_catalog.horizon_auto.underwriting_metrics"
+      }
+    ]
+  },
+  "instructions": {
+    "example_question_sqls": [
+      {
+        "id": "20000000000000000000000000000001",
+        "question": [
+          "Which policies have the highest driving risk?"
+        ],
+        "sql": [
+          "SELECT policy_id, region, risk_band, claim_risk_probability, expected_loss, recommended_action\n",
+          "FROM serverless_stable_dvmvgw_catalog.horizon_auto.governed_policy_risk_decisions\n",
+          "ORDER BY claim_risk_probability DESC LIMIT 20"
+        ]
+      },
+      {
+        "id": "20000000000000000000000000000002",
+        "question": [
+          "How much expected loss is associated with high and critical risk policies by region?"
+        ],
+        "sql": [
+          "SELECT `Region`, MEASURE(`High Risk Policy Count`) AS policies, ROUND(MEASURE(`Expected Loss`), 2) AS expected_loss\n",
+          "FROM serverless_stable_dvmvgw_catalog.horizon_auto.underwriting_metrics\n",
+          "WHERE `Risk Band` IN ('High', 'Critical') GROUP BY ALL ORDER BY expected_loss DESC"
+        ]
+      }
+    ],
+    "text_instructions": [
+      {
+        "id": "30000000000000000000000000000001",
+        "content": [
+          "You are Horizon Auto Insurance's underwriting analytics assistant. Use underwriting_metrics as the authoritative source for every portfolio KPI, count, premium, expected-loss, loss-ratio, renewal, claim, and intervention aggregation. Query its measures with MEASURE() and group by its governed dimensions. Use governed_policy_risk_decisions for individual policy risk: claim_risk_probability, risk_band (Critical, High, Moderate, Low), recommended_action, expected_loss, and requires_review. These are the same values the underwriting app shows. Use renewal_review_candidates only for customer display names and detailed telematics features. Prefer exact Customer ID or Policy ID lookups. Customer names are synthetic convenience labels and may not be unique; ask for Customer ID when a name is ambiguous. Treat risk signals as decision support, not autonomous premium decisions. Never infer protected characteristics. Explain individual risk using observable driving factors and include the recommended action. behavior_risk_score is a heuristic explanatory feature; do not use it to rank or band risk."
+        ]
+      }
+    ]
+  }
+}

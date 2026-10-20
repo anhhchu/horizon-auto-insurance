@@ -1,0 +1,10 @@
+resources:
+  jobs:
+    horizon_metrics:
+      name: horizon-auto-create-metrics
+      tasks:
+        - task_key: create_underwriting_metrics
+          sql_task:
+            warehouse_id: ${resources.sql_warehouses.horizon_warehouse.id}
+            file:
+              path: ../src/metrics/create_underwriting_metrics.sql

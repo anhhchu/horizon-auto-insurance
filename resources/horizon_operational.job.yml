@@ -1,0 +1,48 @@
+resources:
+  jobs:
+    horizon_operational:
+      name: horizon-auto-operational
+      schedule:
+        quartz_cron_expression: 0 0 2 * * ?
+        timezone_id: America/Los_Angeles
+        pause_status: PAUSED
+      tasks:
+        - task_key: run_lakeflow
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.horizon_pipeline.id}
+            full_refresh: false
+        - task_key: score_policies
+          depends_on:
+            - task_key: run_lakeflow
+          notebook_task:
+            notebook_path: ../src/ml/score_policies.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: ml
+        - task_key: build_policy_risk_decisions
+          depends_on:
+            - task_key: score_policies
+          sql_task:
+            warehouse_id: ${resources.sql_warehouses.horizon_warehouse.id}
+            file:
+              path: ../src/gold/build_policy_risk_decisions.sql
+        - task_key: sync_lakebase
+          depends_on:
+            - task_key: build_policy_risk_decisions
+          notebook_task:
+            notebook_path: ../src/lakebase/sync_policy_risk_decisions.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: lakebase
+      environments:
+        - environment_key: ml
+          spec:
+            client: "4"
+            dependencies:
+              - mlflow>=3.1.0
+              - scikit-learn>=1.5.0
+        - environment_key: lakebase
+          spec:
+            client: "4"

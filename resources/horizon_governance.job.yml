@@ -1,0 +1,10 @@
+resources:
+  jobs:
+    horizon_governance:
+      name: horizon-auto-apply-governance
+      tasks:
+        - task_key: apply_customer_abac
+          sql_task:
+            warehouse_id: ${resources.sql_warehouses.horizon_warehouse.id}
+            file:
+              path: ../src/governance/apply_customer_abac.sql

@@ -1,0 +1,10 @@
+resources:
+  volumes:
+    # Underwriting guidelines, program terms, and notice rules (src/guidelines/pdf).
+    # Attached to the Horizon Genie Agent as a source so Agent mode answers cite them.
+    underwriting_guidelines:
+      catalog_name: ${var.catalog}
+      schema_name: ${var.schema}
+      name: underwriting_guidelines
+      volume_type: MANAGED
+      comment: Horizon underwriting guidelines, VectorDrive program terms, and West region notice requirements. Fictional demo documents.

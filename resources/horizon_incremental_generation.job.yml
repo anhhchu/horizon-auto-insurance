@@ -1,0 +1,30 @@
+resources:
+  jobs:
+    horizon_incremental_generation:
+      name: horizon-auto-generate-incremental-files
+      schedule:
+        quartz_cron_expression: 0 0 1 * * ?
+        timezone_id: America/Los_Angeles
+        pause_status: PAUSED
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: delivery_date
+          default: ""
+      tasks:
+        - task_key: generate_incremental_files
+          notebook_task:
+            notebook_path: ../src/data_generation/generate_incremental_files.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              delivery_date: "{{job.parameters.delivery_date}}"
+          environment_key: default
+      environments:
+        - environment_key: default
+          spec:
+            client: "4"
+            dependencies:
+              - Faker==37.12.0
