@@ -1,0 +1,60 @@
+bundle:
+  name: horizon-underwriting
+
+variables:
+  sql_warehouse_id:
+    description: SQL Warehouse ID
+  genie_space_id:
+    description: Default Genie Space ID
+  genie_space_name:
+    description: Genie Space display name
+  postgres_branch:
+    description: Full Lakebase Postgres branch resource name. Obtain by running `databricks postgres list-branches {project-name}`, select the desired item from the output array and use its .name value. Requires the project resource name.
+  postgres_database:
+    description: Full Lakebase Postgres database resource name. Obtain by running `databricks postgres list-databases {branch-name}`, select the desired item from the output array and use its .name value. Requires the branch resource name.
+
+resources:
+  apps:
+    app:
+      name: "horizon-underwriting"
+      description: "Horizon Auto Insurance human-in-the-loop underwriting workspace"
+      source_code_path: ./
+
+      # Start the app automatically on deploy.
+      lifecycle:
+        started: true
+      # Both scopes act as the signed-in user: dashboards.genie for Genie Agent mode, postgres
+      # for Lakebase per-user connections (region-scoped views in horizon_app).
+      user_api_scopes:
+        - dashboards.genie
+        - postgres
+
+      # The resources which this app has access to.
+      resources:
+        - name: sql-warehouse
+          sql_warehouse:
+            id: ${var.sql_warehouse_id}
+            permission: CAN_USE
+        - name: genie-space
+          genie_space:
+            name: ${var.genie_space_name}
+            space_id: ${var.genie_space_id}
+            permission: CAN_RUN
+        - name: postgres
+          postgres:
+            branch: ${var.postgres_branch}
+            database: ${var.postgres_database}
+            permission: CAN_CONNECT_AND_CREATE
+
+targets:
+  default:
+    default: true
+    workspace:
+      host: https://fevm-serverless-stable-dvmvgw.cloud.databricks.com
+
+    variables:
+      sql_warehouse_id: e0d8b485c7066e4e
+      genie_space_id: 01f1c6c7119c15fb980d25cd32ec7bd2
+      genie_space_name: Horizon Underwriting Intelligence
+      postgres_branch: projects/horizon-auto/branches/production
+      postgres_database: projects/horizon-auto/branches/production/databases/databricks-postgres

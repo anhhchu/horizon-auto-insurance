@@ -1,0 +1,320 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+@import "@databricks/appkit-ui/styles.css";
+
+/* ============================================================
+   Databricks brand tokens (source: databricks-impeccable brand-tokens.css)
+   ============================================================ */
+:root {
+  --db-lava-600: #FF3621;
+  --db-navy-900: #0B2026;
+  --db-oat-medium: #EEEDE9;
+  --db-oat-light: #F9F7F4;
+  --db-white: #FFFFFF;
+
+  --db-success: #00A972;
+  --db-warning: #FBB300;
+  --db-info: #4462C9;
+
+  --db-neutral-700: #4A5568;
+  --db-neutral-500: #A0AEC0;
+  --db-neutral-300: #CBD5E0;
+  --db-border: #C4CCD6;
+
+  --db-dark-mid: #143D4A;
+  --db-teal: #1B5162;
+  --db-teal-muted: #618794;
+  --db-deep-navy: #003159;
+  --db-rose: #98102A;
+  --db-orange-sec: #FF7033;
+
+  --db-font-primary: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --db-font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+
+  --db-text-h2: 2.25rem;
+  --db-text-h3: 1.5rem;
+  --db-text-h4: 1.125rem;
+  --db-text-body: 1rem;
+  --db-text-small: 0.875rem;
+
+  --db-space-xs: 4px;
+  --db-space-sm: 8px;
+  --db-space-md: 16px;
+  --db-space-lg: 24px;
+  --db-space-xl: 32px;
+  --db-space-2xl: 48px;
+
+  --db-radius-sm: 4px;
+  --db-radius-md: 8px;
+  --db-radius-card: 12px;
+
+  --db-duration-fast: 150ms;
+  --db-duration-state: 250ms;
+  --db-duration-layout: 400ms;
+  --db-ease-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --db-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================
+   AppKit UI theme → Databricks palette (light)
+   ============================================================ */
+:root {
+  --radius: var(--db-radius-md);
+  --background: var(--db-oat-light);
+  --foreground: var(--db-navy-900);
+  --card: var(--db-white);
+  --card-foreground: var(--db-navy-900);
+  --popover: var(--db-white);
+  --popover-foreground: var(--db-navy-900);
+  --primary: var(--db-lava-600);
+  --primary-foreground: var(--db-white);
+  --secondary: var(--db-oat-medium);
+  --secondary-foreground: var(--db-navy-900);
+  --muted: var(--db-oat-medium);
+  --muted-foreground: var(--db-neutral-700);
+  --accent: var(--db-oat-medium);
+  --accent-foreground: var(--db-navy-900);
+  --destructive: var(--db-rose);
+  --destructive-foreground: var(--db-white);
+  --success: var(--db-success);
+  --success-foreground: var(--db-navy-900);
+  --warning: var(--db-warning);
+  --warning-foreground: var(--db-navy-900);
+  --border: var(--db-border);
+  --input: var(--db-border);
+  --ring: var(--db-lava-600);
+
+  --sidebar: var(--db-navy-900);
+  --sidebar-foreground: var(--db-white);
+  --sidebar-primary: var(--db-lava-600);
+  --sidebar-primary-foreground: var(--db-white);
+  --sidebar-accent: var(--db-dark-mid);
+  --sidebar-accent-foreground: var(--db-white);
+  --sidebar-border: var(--db-dark-mid);
+  --sidebar-ring: var(--db-lava-600);
+
+  /* Chart palettes: literal hex so ECharts can parse them */
+  --chart-cat-1: #FF3621;
+  --chart-cat-2: #4462C9;
+  --chart-cat-3: #00A972;
+  --chart-cat-4: #FBB300;
+  --chart-cat-5: #FF7033;
+  --chart-cat-6: #003159;
+  --chart-cat-7: #A0AEC0;
+  --chart-cat-8: #122A45;
+  --chart-seq-1: #F9F7F4;
+  --chart-seq-2: #FFDDD8;
+  --chart-seq-3: #FFB8AD;
+  --chart-seq-4: #FF9482;
+  --chart-seq-5: #FF7057;
+  --chart-seq-6: #FF4C2C;
+  --chart-seq-7: #FF3621;
+  --chart-seq-8: #CC2B1A;
+  --chart-div-1: #003159;
+  --chart-div-2: #1A5A7F;
+  --chart-div-3: #4A8AB5;
+  --chart-div-4: #A0C4D9;
+  --chart-div-5: #FFD4CC;
+  --chart-div-6: #FF9482;
+  --chart-div-7: #FF5C3D;
+  --chart-div-8: #FF3621;
+  --chart-axis-label: #4A5568;
+  --chart-axis-title: #0B2026;
+  --chart-grid: #EEEDE9;
+  --chart-tooltip-bg: #FFFFFF;
+
+  /* Risk bands — ordered, never Lava; always paired with a text label */
+  --risk-low: var(--db-neutral-500);
+  --risk-moderate: var(--db-warning);
+  --risk-high: var(--db-orange-sec);
+  --risk-critical: var(--db-rose);
+  --risk-track: var(--db-oat-medium);
+}
+
+/* Dark — rebuilt surface hierarchy, not inverted */
+.dark {
+  --background: var(--db-navy-900);
+  --foreground: var(--db-white);
+  --card: var(--db-dark-mid);
+  --card-foreground: var(--db-white);
+  --popover: var(--db-teal);
+  --popover-foreground: var(--db-white);
+  --primary: var(--db-lava-600);
+  --primary-foreground: var(--db-white);
+  --secondary: var(--db-teal);
+  --secondary-foreground: var(--db-white);
+  --muted: var(--db-teal);
+  --muted-foreground: var(--db-neutral-300);
+  --accent: var(--db-teal);
+  --accent-foreground: var(--db-white);
+  --destructive: var(--db-orange-sec);
+  --destructive-foreground: var(--db-navy-900);
+  --success: var(--db-success);
+  --success-foreground: var(--db-navy-900);
+  --warning: var(--db-warning);
+  --warning-foreground: var(--db-navy-900);
+  --border: var(--db-neutral-700);
+  --input: var(--db-neutral-700);
+  --ring: var(--db-lava-600);
+
+  --sidebar: var(--db-navy-900);
+  --sidebar-foreground: var(--db-white);
+  --sidebar-accent: var(--db-dark-mid);
+  --sidebar-accent-foreground: var(--db-white);
+  --sidebar-border: var(--db-dark-mid);
+
+  --chart-axis-label: #CBD5E0;
+  --chart-axis-title: #FFFFFF;
+  --chart-grid: #1B5162;
+  --chart-tooltip-bg: #1B5162;
+
+  --risk-low: var(--db-teal-muted);
+  --risk-critical: var(--db-lava-600);
+  --risk-track: var(--db-teal);
+}
+
+@theme inline {
+  --font-sans: var(--db-font-primary);
+  --font-mono: var(--db-font-mono);
+}
+
+@layer base {
+  html, body {
+    font-family: var(--db-font-primary);
+    font-size: var(--db-text-body);
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4 {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  code, pre, kbd {
+    font-family: var(--db-font-mono);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}
+
+/* ============================================================
+   Horizon custom components (match AppKit radius, density, focus)
+   ============================================================ */
+.hz-num {
+  font-family: var(--db-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.hz-eyebrow {
+  font-size: var(--db-text-small);
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.hz-page-title {
+  font-size: var(--db-text-h3);
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.hz-section-title {
+  font-size: var(--db-text-h4);
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+/* KPI strip: one bordered row of figures, dividers between */
+.hz-kpi-strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--db-radius-card);
+}
+.hz-kpi-strip > * + * {
+  border-top: 1px solid var(--border);
+}
+@media (min-width: 768px) {
+  .hz-kpi-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .hz-kpi-strip > * + * {
+    border-top: 0;
+    border-inline-start: 1px solid var(--border);
+  }
+}
+.hz-kpi {
+  padding: var(--db-space-md) var(--db-space-lg);
+}
+.hz-kpi-value {
+  font-family: var(--db-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--db-text-h3);
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+/* Risk band swatch — square marker, paired with label text */
+.hz-swatch {
+  display: inline-block;
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+  border-radius: 2px;
+  flex: none;
+}
+.hz-swatch[data-band="Low"] { background: var(--risk-low); }
+.hz-swatch[data-band="Moderate"] { background: var(--risk-moderate); }
+.hz-swatch[data-band="High"] { background: var(--risk-high); }
+.hz-swatch[data-band="Critical"] { background: var(--risk-critical); }
+
+/* Risk meter: probability against band thresholds */
+.hz-meter {
+  position: relative;
+  block-size: var(--db-space-sm);
+  border-radius: var(--db-radius-sm);
+  background: var(--risk-track);
+  overflow: hidden;
+}
+.hz-meter-fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  transform-origin: left center;
+  transition: transform var(--db-duration-layout) var(--db-ease-expo);
+}
+.hz-meter-fill[data-band="Low"] { background: var(--risk-low); }
+.hz-meter-fill[data-band="Moderate"] { background: var(--risk-moderate); }
+.hz-meter-fill[data-band="High"] { background: var(--risk-high); }
+.hz-meter-fill[data-band="Critical"] { background: var(--risk-critical); }
+.hz-meter-tick {
+  position: absolute;
+  inset-block: 0;
+  inline-size: 2px;
+  background: var(--card);
+}
+
+/* Band distribution bars */
+.hz-bar {
+  block-size: var(--db-space-sm);
+  border-radius: var(--db-radius-sm);
+  transform-origin: left center;
+  transition: transform var(--db-duration-layout) var(--db-ease-expo);
+}
+.hz-bar[data-band="Low"] { background: var(--risk-low); }
+.hz-bar[data-band="Moderate"] { background: var(--risk-moderate); }
+.hz-bar[data-band="High"] { background: var(--risk-high); }
+.hz-bar[data-band="Critical"] { background: var(--risk-critical); }
+
+/* Clickable queue rows */
+.hz-row {
+  cursor: pointer;
+  transition: background-color var(--db-duration-fast) var(--db-ease-quart);
+}
+.hz-row:hover,
+.hz-row:focus-within {
+  background: var(--muted);
+}
