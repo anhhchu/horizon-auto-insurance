@@ -1,2 +1,9 @@
 febar_requirement.md
+tech-bar-skill.md
 
+# Local tooling and caches
+.isaac/
+.vscode/
+.databricks/
+__pycache__/
+.DS_Store
