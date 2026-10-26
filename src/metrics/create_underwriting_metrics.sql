@@ -78,7 +78,7 @@ measures:
     comment: Mean ML-predicted probability of a claim in the next term.
   - name: Average Behavior Risk Score
     expr: AVG(behavior_risk_score)
-    comment: Mean heuristic behavior score from zero to one. Explanatory feature only; not used for bands or recommendations.
+    comment: Mean heuristic behavior score from zero to one. Explanatory feature only and not used for bands or recommendations.
   - name: Prior Claim Count
     expr: SUM(prior_claim_count)
     comment: Number of historical claims across selected policies.

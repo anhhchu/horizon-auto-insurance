@@ -23,10 +23,11 @@ resources:
       # Start the app automatically on deploy.
       lifecycle:
         started: true
-      # Both scopes act as the signed-in user: dashboards.genie for Genie Agent mode, postgres
-      # for Lakebase per-user connections (region-scoped views in horizon_app).
+      # Scopes act as the signed-in user: dashboards.genie for the AppKit Genie plugin,
+      # genie for the Agent Responses API, and postgres for per-user Lakebase connections.
       user_api_scopes:
         - dashboards.genie
+        - genie
         - postgres
 
       # The resources which this app has access to.
