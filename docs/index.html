@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Horizon Auto Insurance uses Databricks to detect worsening driving risk and support governed, human-approved renewal decisions.">
+    <title>Horizon Auto Insurance | Databricks Solution</title>
+    <link rel="stylesheet" href="assets/horizon.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="rail" aria-label="Story sections">
+      <a href="#opening" aria-label="Opening">01</a>
+      <a href="#problem" aria-label="Business problem">02</a>
+      <a href="#outcomes" aria-label="Business outcomes">03</a>
+      <a href="#solution" aria-label="Solution overview">04</a>
+      <a href="#pipeline" aria-label="Pipeline design">05</a>
+      <a href="#runtime" aria-label="Runtime interaction">06</a>
+      <a href="#technology" aria-label="Technology map">07</a>
+      <a href="#governance" aria-label="Governance">08</a>
+      <a href="#pilot" aria-label="Pilot plan">09</a>
+    </nav>
+
+    <main id="main">
+      <section class="slide slide--dark" id="opening">
+        <div class="slide__inner">
+          <p class="eyebrow">Horizon Auto Insurance · Solution Overview</p>
+          <h1>Catch driving risk <span class="accent">before</span> it becomes a claim.</h1>
+          <p class="lede">Proactive prevention and human-approved renewal decisions on one governed platform.</p>
+          <div class="rule" aria-hidden="true"></div>
+          <p class="tag">Business → workflow → technical deep dive</p>
+        </div>
+        <span class="slide-number">01</span>
+      </section>
+
+      <section class="slide" id="problem">
+        <div class="slide__inner">
+          <p class="eyebrow">The Business Problem</p>
+          <h2>Risk changes between portfolio reviews.</h2>
+          <div class="split">
+            <blockquote class="quote">
+              “My underwriters can explain yesterday’s book. They cannot see which drivers became riskier this week—or intervene before renewal.”
+              <footer>Maya Chen · Regional Underwriting Manager</footer>
+            </blockquote>
+            <div class="grid">
+              <article class="card">
+                <span class="card__number">01</span>
+                <h3>Late signal</h3>
+                <p>Periodic review reveals unsafe trends after exposure has accumulated.</p>
+              </article>
+              <article class="card">
+                <span class="card__number">02</span>
+                <h3>Fragmented evidence</h3>
+                <p>Telemetry, claims, guidelines, and policy state sit in separate workflows.</p>
+              </article>
+              <article class="card">
+                <span class="card__number">03</span>
+                <h3>Hard to defend</h3>
+                <p>Manual recommendations lack a consistent explanation and audit trail.</p>
+              </article>
+            </div>
+          </div>
+        </div>
+        <span class="slide-number">02</span>
+      </section>
+
+      <section class="slide" id="outcomes">
+        <div class="slide__inner">
+          <p class="eyebrow">The Quantified Stakes</p>
+          <h2>The cost of waiting is operational and financial.</h2>
+          <p class="lede">Prototype targets are modeled outcomes based on synthetic data, not realized customer results.</p>
+          <div class="metrics">
+            <article class="metric">
+              <span class="metric__label">Review time</span>
+              <span class="metric__value">−40%</span>
+              <p>Prioritize the policies that need human judgment.</p>
+            </article>
+            <article class="metric">
+              <span class="metric__label">Intervention</span>
+              <span class="metric__value">80%</span>
+              <p>Reach high-risk policies within one business day.</p>
+            </article>
+            <article class="metric">
+              <span class="metric__label">Preventable claims</span>
+              <span class="metric__value">−5%</span>
+              <p>Modeled reduction through earlier intervention.</p>
+            </article>
+            <article class="metric">
+              <span class="metric__label">Loss ratio</span>
+              <span class="metric__value">+2 pts</span>
+              <p>Modeled portfolio improvement from better timing.</p>
+            </article>
+          </div>
+        </div>
+        <span class="slide-number">03</span>
+      </section>
+
+      <section class="slide" id="solution">
+        <div class="slide__inner">
+          <p class="eyebrow">Solution Architecture</p>
+          <h2>One decision contract connects analytics and operations.</h2>
+          <p class="lede"><code>policy_risk_decisions</code> defines risk band, expected loss, recommended action, and review eligibility. The app, metric view, and Genie show the same answer.</p>
+          <figure class="diagram">
+            <img src="diagrams/horizon-data-flow.svg" alt="Data flow from policy administration and VectorDrive telemetry through Lakeflow, machine learning, the canonical policy risk decision table, Lakebase, Genie, and the underwriter application.">
+            <figcaption>Data flow architecture · Delta remains the analytical source of truth while Lakebase serves the operational workflow.</figcaption>
+          </figure>
+        </div>
+        <span class="slide-number">04</span>
+      </section>
+
+      <section class="slide" id="pipeline">
+        <div class="slide__inner">
+          <p class="eyebrow">Data Engineering Deep Dive</p>
+          <h2>Incremental by design, reconciled by contract.</h2>
+          <p class="lede">Lakeflow handles continuous files and keyed corrections without rebuilding the entire portfolio.</p>
+          <figure class="diagram">
+            <img src="diagrams/horizon-pipeline-design.svg" alt="Lakeflow pipeline design with Bronze Auto Loader ingestion, Silver Auto CDC processing, Gold feature materialized views, and post-pipeline scoring and Lakebase synchronization.">
+            <figcaption>Pipeline design · Features are built in Lakeflow; scoring, decisioning, and synchronization run after the pipeline.</figcaption>
+          </figure>
+        </div>
+        <span class="slide-number">05</span>
+      </section>
+
+      <section class="slide" id="runtime">
+        <div class="slide__inner">
+          <p class="eyebrow">Application Deep Dive</p>
+          <h2>Fast reads, governed investigation, human-only writes.</h2>
+          <p class="lede">Genie investigates from governed data and underwriting guidelines. Only the signed-in underwriter records a decision.</p>
+          <figure class="diagram">
+            <img src="diagrams/horizon-runtime-interaction.svg" alt="Runtime interaction between the underwriter, Databricks App, Lakebase, Genie Agent, SQL warehouse, underwriting guidelines, and audit events.">
+            <figcaption>Runtime interaction · Identity and regional entitlements follow the user through the application, analytics, and operational layers.</figcaption>
+          </figure>
+        </div>
+        <span class="slide-number">06</span>
+      </section>
+
+      <section class="slide" id="technology">
+        <div class="slide__inner">
+          <p class="eyebrow">Technology Map</p>
+          <h2>Each Databricks service has one clear job.</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Technology</th><th>Role</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Lakeflow</strong></td><td>Incremental ingestion, CDC, data quality, and feature engineering</td></tr>
+                <tr><td><strong>Delta Lake + Unity Catalog</strong></td><td>Governed storage, permissions, ABAC, lineage, and model assets</td></tr>
+                <tr><td><strong>MLflow</strong></td><td>Experiment tracking, model registration, production aliases, and scoring lifecycle</td></tr>
+                <tr><td><strong>Metric views + Genie</strong></td><td>Shared KPI definitions and governed natural-language analysis</td></tr>
+                <tr><td><strong>Lakebase</strong></td><td>Low-latency application reads and operational decision writes</td></tr>
+                <tr><td><strong>Databricks Apps</strong></td><td>Identity-aware underwriter review and decision workflow</td></tr>
+                <tr><td><strong>Unity AI Gateway</strong></td><td>Governed model endpoint access and observability</td></tr>
+                <tr><td><strong>Bundles</strong></td><td>Deployment of jobs, pipelines, warehouses, volumes, and permissions as code</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <span class="slide-number">07</span>
+      </section>
+
+      <section class="slide" id="governance">
+        <div class="slide__inner">
+          <p class="eyebrow">Governance and Responsible Use</p>
+          <h2>Governance follows the user from table to decision.</h2>
+          <div class="grid">
+            <article class="card"><span class="card__number">01</span><h3>Human control</h3><p>The model scores risk, rules recommend, and only an underwriter decides.</p></article>
+            <article class="card"><span class="card__number">02</span><h3>Identity-aware access</h3><p>One regional assignment contract scopes Unity Catalog and Lakebase rows.</p></article>
+            <article class="card"><span class="card__number">03</span><h3>Explainability</h3><p>Model drivers, generated SQL, citations, actions, and overrides remain reviewable.</p></article>
+            <article class="card"><span class="card__number">04</span><h3>Quality</h3><p>Pipeline expectations stop orphaned keys and malformed events before Gold.</p></article>
+            <article class="card"><span class="card__number">05</span><h3>Audit</h3><p>Questions, recommendations, decisions, timestamps, and reviewer identity are recorded.</p></article>
+            <article class="card"><span class="card__number">06</span><h3>Fairness</h3><p>Direct PII is excluded and outcomes support approved comparison-group monitoring.</p></article>
+          </div>
+        </div>
+        <span class="slide-number">08</span>
+      </section>
+
+      <section class="slide slide--dark" id="pilot">
+        <div class="slide__inner">
+          <p class="eyebrow">The Ask</p>
+          <h2>Put earlier risk signals in the hands of underwriters.</h2>
+          <p class="lede">Pilot one region and one renewal cohort. Validate the controls, measure the workflow, then scale after the evidence holds.</p>
+          <div class="grid">
+            <article class="card"><span class="card__number">01</span><h3>Choose the cohort</h3><p>Select a region and renewal window where earlier intervention can be observed.</p></article>
+            <article class="card"><span class="card__number">02</span><h3>Agree on controls</h3><p>Confirm rating boundaries, program terms, entitlements, and audit requirements.</p></article>
+            <article class="card"><span class="card__number">03</span><h3>Measure the pilot</h3><p>Track review time, intervention coverage, overrides, retention, and modeled loss impact.</p></article>
+          </div>
+          <div class="actions" style="margin-top: 2rem">
+            <a class="cta" href="https://horizon-underwriting-7474647158801289.aws.databricksapps.com">Open the application</a>
+            <a class="text-link" href="../README.md">View repository documentation</a>
+          </div>
+        </div>
+        <span class="slide-number">09</span>
+      </section>
+    </main>
+  </body>
+</html>

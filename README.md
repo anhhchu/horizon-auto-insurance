@@ -6,7 +6,7 @@ Horizon Auto Insurance is an end-to-end Databricks prototype for proactive drivi
 
 The solution ingests synthetic files from the fictional VectorDrive Telematics partner, governs policy and driving data in Unity Catalog, predicts claims risk, supports natural-language analysis through a Genie Agent, serves governed recommendations through an AI Gateway-backed underwriting agent, persists decisions in Lakebase, and surfaces the workflow in a Databricks App.
 
-See the [business and solution overview](docs/index.md) for the customer story, modeled outcomes, embedded architecture diagrams, technical design, and Databricks technology map.
+See the [business and solution overview](docs/index.html) for the customer story, modeled outcomes, embedded architecture diagrams, technical design, and Databricks technology map.
 
 See [HORIZON_USE_CASE_PLAN.md](HORIZON_USE_CASE_PLAN.md) for the business story, architecture, delivery contract, pipeline design, responsible-use controls, implementation sequence, and execution-evidence checklist.
 
@@ -94,7 +94,3 @@ Backfill IDs share one numeric domain: customer `CUST-n`, policy `POL-n`, vehicl
 The `referential_integrity_checks` materialized view checks every parent-child relationship after Silver deduplication. Its `no_orphaned_foreign_keys` expectation fails the pipeline when any relationship has an orphan, so invalid data never reaches Gold.
 
 After scoring, `src/gold/build_policy_risk_decisions.sql` merges Silver policies, `policy_driving_features`, and `policy_risk_predictions` into `policy_risk_decisions`. It is the only place risk band, recommended action, expected loss, and review eligibility are defined. `underwriting_metrics` and Genie read it through the region-filtered `governed_policy_risk_decisions` view. The app reads the Lakebase synced copy as the signed-in user through `horizon_app.my_policy_risk_decisions`, a view that joins `underwriter_region_assignments_synced` on `current_user`. One entitlement table therefore scopes rows the same way in Unity Catalog and in Lakebase.
-
-## Status
-
-Planning complete; implementation pending.
