@@ -6,6 +6,8 @@ Horizon Auto Insurance is an end-to-end Databricks prototype for proactive drivi
 
 The solution ingests synthetic files from the fictional VectorDrive Telematics partner, governs policy and driving data in Unity Catalog, predicts claims risk, supports natural-language analysis through a Genie Agent, serves governed recommendations through an AI Gateway-backed underwriting agent, persists decisions in Lakebase, and surfaces the workflow in a Databricks App.
 
+See the [business and solution overview](docs/index.md) for the customer story, modeled outcomes, embedded architecture diagrams, technical design, and Databricks technology map.
+
 See [HORIZON_USE_CASE_PLAN.md](HORIZON_USE_CASE_PLAN.md) for the business story, architecture, delivery contract, pipeline design, responsible-use controls, implementation sequence, and execution-evidence checklist.
 
 ## Core Journey
