@@ -49,7 +49,15 @@ export const QUEUE_SQL = `
     AND d.requires_review
     AND ($1::text = 'all' OR ($1::text = 'open') = (latest.decision IS NULL))
   ORDER BY d.claim_risk_probability DESC, d.renewal_date, d.policy_id
-  LIMIT 200`;
+  LIMIT $2 OFFSET $3`;
+
+export const QUEUE_COUNT_SQL = `
+  SELECT COUNT(*)::int AS total
+  FROM ${SOURCE} AS d
+  ${LATEST_DECISION}
+  WHERE d.policy_status = 'ACTIVE'
+    AND d.requires_review
+    AND ($1::text = 'all' OR ($1::text = 'open') = (latest.decision IS NULL))`;
 
 export const POLICY_SQL = `
   SELECT

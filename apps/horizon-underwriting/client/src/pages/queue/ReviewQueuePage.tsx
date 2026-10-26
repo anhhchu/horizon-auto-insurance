@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import {
-  Badge, Card, CardContent, CardHeader, CardTitle, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger,
+  Badge, Button, Card, CardContent, CardHeader, CardTitle, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger,
 } from '@databricks/appkit-ui/react';
-import { ChevronRight, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { GenieAgentPanel } from '@/components/genie-agent-panel';
 import { BandDistribution, RiskBadge } from '@/components/risk';
 import { EmptyState, ErrorState, PageHeader } from '@/components/states';
-import { useApi, type Portfolio, type QueueRow } from '@/lib/api';
+import { useApi, type Portfolio, type QueuePage, type QueueRow } from '@/lib/api';
 import { daysUntil, formatCurrency, formatDate, formatDateTime, formatInteger, formatProbability, hoursSince } from '@/lib/format';
 import { asRiskBand, REVIEW_THRESHOLD, RISK_BANDS } from '@/lib/risk';
 
@@ -80,8 +80,14 @@ const EMPTY: Record<QueueStatus, { title: string; description: string }> = {
 function Queue() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<QueueStatus>('open');
-  const queue = useApi<QueueRow[]>(`/api/queue?status=${status}`);
-  const rows = (queue.data ?? []).slice(0, 50);
+  const [page, setPage] = useState(1);
+  const queue = useApi<QueuePage>(`/api/queue?status=${status}&page=${page}&pageSize=10`);
+  const rows = queue.data?.rows ?? [];
+  const total = queue.data?.total ?? 0;
+  const pageSize = queue.data?.pageSize ?? 10;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const firstRow = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const lastRow = Math.min(page * pageSize, total);
 
   return (
     <Card className="min-w-0 gap-0 py-0">
@@ -90,7 +96,7 @@ function Queue() {
           <CardTitle className="hz-section-title">Renewal queue</CardTitle>
           <p className="text-sm text-muted-foreground">Ranked by claim risk</p>
         </div>
-        <ToggleGroup type="single" variant="outline" size="sm" value={status} onValueChange={(value) => { if (value) setStatus(value as QueueStatus); }} aria-label="Queue status">
+        <ToggleGroup type="single" variant="outline" size="sm" value={status} onValueChange={(value) => { if (value) { setStatus(value as QueueStatus); setPage(1); } }} aria-label="Queue status">
           <ToggleGroupItem value="open" className="h-9 px-3">To review</ToggleGroupItem>
           <ToggleGroupItem value="decided" className="h-9 px-3">Decided</ToggleGroupItem>
           <ToggleGroupItem value="all" className="h-9 px-3">All</ToggleGroupItem>
@@ -167,6 +173,20 @@ function Queue() {
                 </li>
               ))}
             </ul>
+            <div className="flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <p className="text-sm text-muted-foreground" aria-live="polite">
+                Showing <span className="hz-num text-foreground">{firstRow}–{lastRow}</span> of <span className="hz-num text-foreground">{total}</span>
+              </p>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="min-h-11 sm:min-h-9" disabled={page <= 1 || queue.loading} onClick={() => setPage((current) => Math.max(1, current - 1))}>
+                  <ChevronLeft aria-hidden="true" /> Previous
+                </Button>
+                <span className="min-w-20 text-center text-sm text-muted-foreground">Page <span className="hz-num text-foreground">{page}</span> of <span className="hz-num text-foreground">{pageCount}</span></span>
+                <Button variant="outline" size="sm" className="min-h-11 sm:min-h-9" disabled={page >= pageCount || queue.loading} onClick={() => setPage((current) => Math.min(pageCount, current + 1))}>
+                  Next <ChevronRight aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
           </>
         )}
       </CardContent>
@@ -189,20 +209,18 @@ export function ReviewQueuePage() {
         meta={portfolio.data && <span>{portfolio.data.regions.length ? `Your regions: ${portfolio.data.regions.join(', ')}` : 'No regions assigned to you'}</span>}
       />
       <KpiStrip portfolio={portfolio} />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,1fr)]">
         <Queue />
-        <div className="space-y-6">
-          <Distribution portfolio={portfolio} />
-          <GenieAgentPanel
-            title="Ask Genie about the portfolio"
-            description="Questions about your book, answered from the governed metric view and guidelines, with the SQL shown."
-            starters={[
-              'Which risk bands drive most of the expected loss for West renewals in the next 30 days?',
-              'What is the override rate by underwriter this month, and what do the guidelines say about override limits?',
-            ]}
-          />
-        </div>
+        <Distribution portfolio={portfolio} />
       </div>
+      <GenieAgentPanel
+        title="Ask Genie about the portfolio"
+        description="Questions about your book, answered from the governed metric view and guidelines, with the SQL shown."
+        starters={[
+          'Which risk bands drive most of the expected loss for West renewals in the next 30 days?',
+          'What is the override rate by underwriter this month, and what do the guidelines say about override limits?',
+        ]}
+      />
       <p className="text-sm text-muted-foreground">Source: policy_risk_decisions, synced from Unity Catalog to Lakebase after each scoring run. Rows are limited to your regions in Lakebase and Unity Catalog.</p>
     </div>
   );

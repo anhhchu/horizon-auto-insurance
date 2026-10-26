@@ -96,14 +96,14 @@ export function GenieAgentPanel({ title, description, starters, policyId }: Geni
   }
 
   return (
-    <Card>
+    <Card className="min-w-0">
       <CardHeader className="gap-1">
         <CardTitle className="hz-section-title flex items-center gap-2"><MessageSquareText className="size-5" aria-hidden="true" />{title}</CardTitle>
         <p className="text-sm text-muted-foreground">{description}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {turns.length === 0 && (
-          <div className="flex flex-col gap-2">
+          <div className="grid gap-2 md:grid-cols-2">
             {starters.map((starter) => (
               <Button key={starter} variant="outline" className="h-auto min-h-11 justify-start whitespace-normal py-2 text-left font-normal" onClick={() => void ask(starter)}>
                 {starter}
@@ -139,7 +139,8 @@ export function GenieAgentPanel({ title, description, starters, policyId }: Geni
             <FieldLabel htmlFor={`genie-question-${policyId ?? 'portfolio'}`}>{turns.length ? 'Follow-up question' : 'Your question'}</FieldLabel>
             <Textarea
               id={`genie-question-${policyId ?? 'portfolio'}`}
-              rows={2}
+              rows={3}
+              className="min-h-24 resize-y"
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
               onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void ask(question); } }}

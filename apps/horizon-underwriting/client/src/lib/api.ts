@@ -33,6 +33,13 @@ export interface QueueRow extends LatestDecision {
   distraction_events_90d: number;
 }
 
+export interface QueuePage {
+  rows: QueueRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface Policy extends LatestDecision {
   policy_id: string;
   customer_id: string;

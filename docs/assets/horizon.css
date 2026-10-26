@@ -391,14 +391,25 @@ tr:last-child td {
   align-items: center;
 }
 
-.text-link {
-  color: var(--db-teal);
-  font-weight: 700;
-  text-underline-offset: 0.2em;
+.icon-link {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--db-white);
+  border: 1px solid #62747a;
+  border-radius: 0.35rem;
 }
 
-.slide--dark .text-link {
-  color: var(--db-white);
+.icon-link svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon-link:hover {
+  color: var(--db-navy);
+  background: var(--db-white);
 }
 
 @media (max-width: 760px) {

@@ -3,7 +3,7 @@ import type { Application, Request, Response } from 'express';
 import { z } from 'zod';
 import { GenieAskBody, streamGenieAnswer } from './genie-agent';
 import {
-  DECISION_BY_ID_SQL, DECISIONS_SQL, DISTRIBUTION_SQL, INSERT_AUDIT_SQL, INSERT_DECISION_SQL, NEXT_POLICY_SQL, POLICY_SQL, PORTFOLIO_SQL, QUEUE_SQL, USER_VIEWS_SQL,
+  DECISION_BY_ID_SQL, DECISIONS_SQL, DISTRIBUTION_SQL, INSERT_AUDIT_SQL, INSERT_DECISION_SQL, NEXT_POLICY_SQL, POLICY_SQL, PORTFOLIO_SQL, QUEUE_COUNT_SQL, QUEUE_SQL, USER_VIEWS_SQL,
 } from './policy-queries';
 
 interface LakebaseQuery {
@@ -125,8 +125,16 @@ export async function setupUnderwritingRoutes(appkit: AppKitRuntime) {
 
     app.get('/api/queue', handle(async (req, res) => {
       const status = req.query.status === 'decided' || req.query.status === 'all' ? req.query.status : 'open';
-      const result = await appkit.lakebase.asUser(req).query(QUEUE_SQL, [status]);
-      res.json(result.rows);
+      const requestedPage = typeof req.query.page === 'string' ? Number.parseInt(req.query.page, 10) : 1;
+      const requestedPageSize = typeof req.query.pageSize === 'string' ? Number.parseInt(req.query.pageSize, 10) : 10;
+      const page = Number.isFinite(requestedPage) ? Math.max(1, requestedPage) : 1;
+      const pageSize = Number.isFinite(requestedPageSize) ? Math.min(50, Math.max(5, requestedPageSize)) : 10;
+      const db = appkit.lakebase.asUser(req);
+      const [result, count] = await Promise.all([
+        db.query(QUEUE_SQL, [status, pageSize, (page - 1) * pageSize]),
+        db.query(QUEUE_COUNT_SQL, [status]),
+      ]);
+      res.json({ rows: result.rows, total: Number(count.rows[0]?.total ?? 0), page, pageSize });
     }));
 
     app.get('/api/portfolio', handle(async (req, res) => {
