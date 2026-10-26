@@ -6,7 +6,7 @@ Horizon Auto Insurance is an end-to-end Databricks prototype for proactive drivi
 
 The solution ingests synthetic files from the fictional VectorDrive Telematics partner, governs policy and driving data in Unity Catalog, predicts claims risk, supports natural-language analysis through a Genie Agent, serves governed recommendations through an AI Gateway-backed underwriting agent, persists decisions in Lakebase, and surfaces the workflow in a Databricks App.
 
-See the [business and solution overview](docs/index.html) for the customer story, modeled outcomes, embedded architecture diagrams, technical design, and Databricks technology map.
+Visit the [Horizon Auto Insurance solution site](https://anhhchu.github.io/horizon-auto-insurance/) for the business story, modeled outcomes, architecture diagrams, technical design, and Databricks technology map.
 
 See [HORIZON_USE_CASE_PLAN.md](HORIZON_USE_CASE_PLAN.md) for the business story, architecture, delivery contract, pipeline design, responsible-use controls, implementation sequence, and execution-evidence checklist.
 
@@ -24,9 +24,7 @@ See [HORIZON_USE_CASE_PLAN.md](HORIZON_USE_CASE_PLAN.md) for the business story,
 
 One gold table, `policy_risk_decisions`, defines risk band, recommended action, and expected loss for every policy. The app, the metric view, and Genie all read it, so they show the same numbers. After each build the table syncs to Lakebase, so app pages read Postgres and never wait for a SQL warehouse.
 
-![Horizon data flow](docs/diagrams/horizon-data-flow.svg)
-
-Presentation copy: [SVG](docs/diagrams/horizon-data-flow.svg) · [PNG, 3200 × 1840](docs/diagrams/horizon-data-flow.png).
+[View the data flow architecture on the solution site](https://anhhchu.github.io/horizon-auto-insurance/#solution).
 
 | Step | What runs | Output |
 |---|---|---|
@@ -43,9 +41,7 @@ Presentation copy: [SVG](docs/diagrams/horizon-data-flow.svg) · [PNG, 3200 × 1
 
 Lakeflow builds the features. Scoring and decisioning run after it in the same job, because the claim risk score does not exist while the pipeline runs.
 
-![Recommended pipeline design](docs/diagrams/horizon-pipeline-design.svg)
-
-Presentation copy: [SVG](docs/diagrams/horizon-pipeline-design.svg) · [PNG](docs/diagrams/horizon-pipeline-design.png).
+[View the pipeline design on the solution site](https://anhhchu.github.io/horizon-auto-insurance/#pipeline).
 
 - **Bronze:** Auto Loader streaming tables ingest each landing volume with source lineage.
 - **Silver:** Auto CDC from snapshots keeps SCD2 history for policies, customers, and vehicles. Auto CDC with expectations keeps the latest trips, events, claims, and weather (SCD1). Integrity checks fail the update on orphaned keys.
@@ -56,9 +52,7 @@ Presentation copy: [SVG](docs/diagrams/horizon-pipeline-design.svg) · [PNG](doc
 
 Genie answers from governed data and the underwriting guidelines, as the signed-in user, and cites its sources. Only the underwriter records a decision.
 
-![Runtime interaction](docs/diagrams/horizon-runtime-interaction.svg)
-
-Presentation copy: [SVG](docs/diagrams/horizon-runtime-interaction.svg) · [PNG](docs/diagrams/horizon-runtime-interaction.png).
+[View the runtime interaction on the solution site](https://anhhchu.github.io/horizon-auto-insurance/#runtime).
 
 1. **Review** (steps 1–6): the app reads the West queue, KPIs, policy evidence, and decision history from Lakebase in milliseconds. Policies already decided drop out of the default queue.
 2. **Investigate** (steps 7–14): the app sends the question, with the policy ID, to the Genie Agent in Agent mode as the signed-in user (`POST /api/2.0/genie/agents/{id}/responses`). Genie plans the answer, runs governed SQL on the warehouse, searches the `underwriting_guidelines` volume when the question needs policy rules, and streams back the answer with its SQL and citations. Each question is logged to `audit_events`.
